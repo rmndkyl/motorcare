@@ -237,6 +237,7 @@
   ];
 
   const REMINDER_TEMPLATES = [
+    { kind: 'servis-awal', label: 'Servis pertama 1.000 km', intervalKm: 1000, intervalDays: 30, serviceType: 'servis-mesin', defaultOn: false },
     { kind: 'oli-mesin', label: 'Ganti oli mesin', intervalKm: 2000, intervalDays: 120, serviceType: 'oli-mesin' },
     { kind: 'oli-gardan', label: 'Ganti oli gardan', intervalKm: 8000, intervalDays: 240, serviceType: 'oli-gardan' },
     { kind: 'servis-berkala', label: 'Servis berkala', intervalKm: 4000, intervalDays: 180, serviceType: 'servis-mesin' },
@@ -250,6 +251,49 @@
     { kind: 'pajak', label: 'Pajak kendaraan', intervalKm: null, intervalDays: 365, serviceType: null },
     { kind: 'stnk', label: 'Perpanjangan STNK', intervalKm: null, intervalDays: 365, serviceType: null }
   ];
+
+  /* ---------- preset interval per segmen motor ----------
+   * Angka mengikuti rekomendasi yang beredar di Indonesia:
+   *   - AHM: oli maksimal 4.000 km atau 4 bulan
+   *   - Yamaha: 2.000 km / 2 bulan untuk model lama & pemula, 4.000-5.000 km / 3-4 bulan
+   *     untuk matic-bebek modern, 6.000 km / 4 bulan untuk sport dengan pelumas sintetik
+   *   - filter udara diganti ~16.000 km (lebih awal di rute berdebu)
+   *   - busi 8.000-10.000 km, kampas rem batas aus 2 mm
+   * Ini titik AWAL, bukan kebenaran mutlak — tiap pengingat tetap bisa diedit user.
+   */
+  const BIKE_SEGMENTS = [
+    { id: 'matic-baru', label: 'Matic / bebek (≤5 tahun)', hint: 'Oli 4.000 km atau 4 bulan' },
+    { id: 'matic-lama', label: 'Matic / bebek lama (>5 tahun)', hint: 'Oli 2.000 km atau 2 bulan' },
+    { id: 'bebek-manual', label: 'Bebek / motor manual', hint: 'Oli 3.000 km atau 3 bulan' },
+    { id: 'sport', label: 'Sport / oli sintetik', hint: 'Oli 6.000 km atau 4 bulan' }
+  ];
+
+  const SEGMENT_INTERVALS = {
+    'matic-baru': {
+      'servis-awal': [1000, 30], 'oli-mesin': [4000, 120], 'oli-gardan': [8000, 240],
+      'servis-berkala': [4000, 120], 'cvt': [8000, 240], 'filter-udara': [8000, 240],
+      'busi': [8000, 365], 'kampas-rem': [10000, 365], 'ban': [20000, 1095],
+      'aki': [20000, 730], 'rantai-gear': [20000, 730]
+    },
+    'matic-lama': {
+      'servis-awal': [1000, 30], 'oli-mesin': [2000, 60], 'oli-gardan': [8000, 240],
+      'servis-berkala': [2000, 60], 'cvt': [8000, 240], 'filter-udara': [6000, 180],
+      'busi': [8000, 365], 'kampas-rem': [10000, 365], 'ban': [20000, 1095],
+      'aki': [20000, 730], 'rantai-gear': [20000, 730]
+    },
+    'bebek-manual': {
+      'servis-awal': [1000, 30], 'oli-mesin': [3000, 90],
+      'servis-berkala': [4000, 120], 'filter-udara': [8000, 240],
+      'busi': [8000, 365], 'kampas-rem': [10000, 365], 'rantai-gear': [4000, 120],
+      'ban': [20000, 1095], 'aki': [20000, 730]
+    },
+    'sport': {
+      'servis-awal': [1000, 30], 'oli-mesin': [6000, 120],
+      'servis-berkala': [5000, 150], 'filter-udara': [8000, 240],
+      'busi': [10000, 365], 'kampas-rem': [10000, 365], 'rantai-gear': [4000, 120],
+      'ban': [20000, 1095], 'aki': [20000, 730]
+    }
+  };
 
   const PRIORITIES = [
     { id: 'rendah', label: 'Rendah', tone: 'ok' },
@@ -268,6 +312,7 @@
     Store, uid, openDB,
     todayISO, parseISO, daysBetween, addDays, fmtDate, fmtNum, fmtRp, fmtKm, monthKey, monthLabel,
     compressImage, readAsDataUrl,
-    SERVICE_TYPES, COMPONENTS, CHECK_STATUS, EXPENSE_CATEGORIES, REMINDER_TEMPLATES, PRIORITIES, DAMAGE_STATUS
+    SERVICE_TYPES, COMPONENTS, CHECK_STATUS, EXPENSE_CATEGORIES, REMINDER_TEMPLATES, PRIORITIES, DAMAGE_STATUS,
+    BIKE_SEGMENTS, SEGMENT_INTERVALS
   };
 })(window);

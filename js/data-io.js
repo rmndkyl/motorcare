@@ -47,6 +47,12 @@
     }
     if (store === 'docs') r.dataUrl = cleanImg(r.dataUrl) || null;
 
+    // segmen motor: hanya nilai yang dikenal, kalau tidak jatuh ke tebakan dari data motor
+    if (store === 'bikes') {
+      const valid = (MC.BIKE_SEGMENTS || []).map((s) => s.id);
+      if (r.segment && valid.indexOf(r.segment) < 0) r.segment = null;
+    }
+
     // teks: buang kontrol & batasi panjang, supaya satu field tidak bisa
     // menabrakkan seluruh tampilan atau menyimpan payload raksasa
     ['nickname', 'brand', 'model', 'plate', 'color', 'note', 'name', 'part', 'symptoms', 'shop', 'type', 'label']

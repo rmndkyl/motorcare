@@ -197,6 +197,15 @@
       return;
     }
 
+    const themeBtn = e.target.closest('[data-theme-opt]');
+    if (themeBtn) {
+      const mode = themeBtn.dataset.themeOpt;
+      const actual = global.MCTheme.set(mode);
+      document.querySelectorAll('[data-theme-opt]').forEach((b) => b.classList.toggle('on', b.dataset.themeOpt === mode));
+      CU.toast('Tema: ' + mode + ' (' + actual + ')', 'ok');
+      return;
+    }
+
     const actBtn = e.target.closest('[data-act]');
     if (actBtn) {
       const act = actBtn.dataset.act;

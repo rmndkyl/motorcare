@@ -63,8 +63,8 @@
     const s = size || 22;
     return '<svg class="mark" viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="none" aria-hidden="true">' +
       '<path d="M3 20V5l6 8 6-8v15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<path d="M18 20V9" stroke="oklch(0.705 0.175 52)" stroke-width="2.6" stroke-linecap="round"/>' +
-      '<path d="M16 6h4" stroke="oklch(0.705 0.175 52)" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<path d="M18 20V9" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<path d="M16 6h4" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/>' +
       '</svg>';
   }
 
@@ -85,7 +85,7 @@
       const x1 = 46 + Math.cos(a) * r1, y1 = 46 + Math.sin(a) * r1;
       const x2 = 46 + Math.cos(a) * r2, y2 = 46 + Math.sin(a) * r2;
       ticks += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) +
-        '" y2="' + y2.toFixed(1) + '" stroke="' + (long ? 'oklch(0.42 0.012 265)' : 'oklch(0.30 0.010 265)') +
+        '" y2="' + y2.toFixed(1) + '" stroke="' + (long ? 'var(--tick-major)' : 'var(--tick-minor)') +
         '" stroke-width="' + (long ? 1.6 : 1) + '" stroke-linecap="round"/>';
     }
     return '<svg viewBox="0 0 92 92" width="' + s + '" height="' + s + '" style="transform:rotate(-90deg)">' +

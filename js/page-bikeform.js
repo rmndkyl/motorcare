@@ -20,6 +20,21 @@
 
       CU.field('Nama panggilan', CU.input('nickname', b.nickname, { placeholder: 'Contoh: Vario Harian', required: true, maxlength: 40 })) +
 
+      '<div class="field"><label>Segmen motor</label>' +
+        '<div style="display:flex;flex-direction:column;gap:7px">' +
+          MC.BIKE_SEGMENTS.map((sg) =>
+            '<label class="checkbox" style="justify-content:flex-start">' +
+              '<input type="radio" name="segment" value="' + sg.id + '"' +
+                ((b.segment || MCS.guessSegment(b)) === sg.id ? ' checked' : '') + '>' +
+              '<span class="box">' + I.icon('check', 11) + '</span>' +
+              '<span style="flex:1"><b style="font-weight:600">' + CU.esc(sg.label) + '</b>' +
+                '<br><span style="font-size:11px;color:var(--text-3)">' + CU.esc(sg.hint) + '</span></span>' +
+            '</label>'
+          ).join('') +
+        '</div>' +
+        '<div class="hint">Menentukan interval awal pengingat. Semua tetap bisa diedit nanti.</div>' +
+      '</div>' +
+
       '<div class="grid2">' +
         '<div class="field"><label>Merek</label>' + CU.select('brand', BRANDS.map((x) => ({ id: x, label: x })), b.brand || 'Honda') + '</div>' +
         '<div class="field"><label>Tipe / model</label>' + CU.input('model', b.model, { placeholder: 'Vario 125', required: true }) + '</div>' +
@@ -91,6 +106,7 @@
           obj.currentKmDate = v.currentKm !== '' ? MC.todayISO() : (obj.currentKmDate || null);
           obj.transmission = v.transmission;
           obj.note = String(v.note || '').trim();
+          obj.segment = v.segment || MCS.guessSegment(obj);
           obj.photos = {};
           slots.forEach((sl) => { if (sl.dataUrl) obj.photos[sl.key] = sl.dataUrl; });
 
@@ -98,8 +114,8 @@
             await MC.Store.put('bikes', obj);
 
             if (!isEdit) {
-              // buat set reminder default
-              const rems = MCS.defaultReminders(obj.id);
+              // buat set reminder default sesuai segmen motor
+              const rems = MCS.defaultReminders(obj.id, obj.segment);
               await Promise.all(rems.map((r) => MC.Store.put('reminders', r)));
               // odometer awal
               if (obj.currentKm !== null) {

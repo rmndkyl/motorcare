@@ -56,9 +56,20 @@
     }
 
     /* ---- pengaturan ---- */
+    html += '<div class="sec-title">Tampilan</div>';
+    html += '<div class="card">' +
+      '<div style="font-size:13px;font-weight:500;margin-bottom:9px">Tema</div>' +
+      '<div class="seg" data-theme-seg>' +
+        MCTheme.OPTIONS.map((o) =>
+          '<button data-theme-opt="' + o.id + '" class="' + (MCTheme.stored() === o.id ? 'on' : '') + '">' +
+            CU.esc(o.label) + '</button>'
+        ).join('') +
+      '</div>' +
+      '<div class="hint" style="margin-top:7px">Terang lebih mudah dibaca di bawah sinar matahari.</div>' +
+    '</div>';
+
     html += '<div class="sec-title">Pengaturan</div>';
     html += '<div class="card" style="padding:6px 14px"><div class="rows">' +
-      rowBtn('palette', 'Tema', 'Saat ini: gelap otomotif', 'theme-info') +
       rowBtn('settings', 'Kapasitas penyimpanan', storageLabel(), 'storage-info') +
       rowBtn('download', 'Paksa muat ulang aplikasi', 'Kalau tampilan terasa tidak update', 'force-reload') +
     '</div></div>';

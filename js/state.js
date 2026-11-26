@@ -73,21 +73,55 @@
     await MC.Store.put('meta', pref);
   }
 
-  // default reminder set untuk motor baru
-  function defaultReminders(bikeId) {
-    return MC.REMINDER_TEMPLATES.map((t) => ({
-      id: MC.uid(),
-      bikeId,
-      kind: t.kind,
-      label: t.label,
-      intervalKm: t.intervalKm,
-      intervalDays: t.intervalDays,
-      serviceType: t.serviceType,
-      active: t.kind !== 'oli-gardan', // gardan hanya utk motor tertentu; user bisa nyalakan
-      soonKm: 300,
-      soonDays: 21
-    }));
+  // default reminder set untuk motor baru — interval mengikuti segmen motor
+  function defaultReminders(bikeId, segment) {
+    const seg = segment || 'matic-baru';
+    const table = MC.SEGMENT_INTERVALS[seg] || MC.SEGMENT_INTERVALS['matic-baru'];
+
+    return MC.REMINDER_TEMPLATES.map((t) => {
+      const iv = table[t.kind];                     // [km, hari] khusus segmen ini
+      const intervalKm = iv ? iv[0] : t.intervalKm;
+      const intervalDays = iv ? iv[1] : t.intervalDays;
+
+      // pengingat yang tidak relevan untuk segmen ini tidak dibuat sama sekali
+      // (mis. oli gardan untuk motor manual, rantai untuk matic)
+      const irrelevant =
+        (t.kind === 'oli-gardan' && !table['oli-gardan']) ||
+        (t.kind === 'cvt' && !table['cvt']) ||
+        (t.kind === 'rantai-gear' && !table['rantai-gear']);
+      if (irrelevant) return null;
+
+      return {
+        id: MC.uid(),
+        bikeId,
+        kind: t.kind,
+        label: t.label,
+        intervalKm,
+        intervalDays,
+        serviceType: t.serviceType,
+        // 'servis-awal' hanya berguna untuk motor baru; default mati supaya tidak
+        // memunculkan "terlewat 12.000 km" pada motor yang sudah lama dipakai
+        active: t.defaultOn === false ? false : (t.kind !== 'oli-gardan'),
+        soonKm: 300,
+        soonDays: 21
+      };
+    }).filter(Boolean);
   }
 
-  global.MCS = { S, activeBike, ctxFor, loadAll, setActiveBike, defaultReminders };
+  // segmen ditebak dari data motor yang sudah diisi — bukan ditanyakan lagi.
+  // Hanya tebakan awal; user bisa mengubahnya di form motor.
+  function guessSegment(bike) {
+    if (!bike) return 'matic-baru';
+    const trans = bike.transmission || 'matik';
+    const year = +bike.year || 0;
+    const thisYear = new Date().getFullYear();
+    const age = year ? thisYear - year : null;
+
+    if (trans === 'manual') return 'bebek-manual';
+    if (trans === 'semi') return 'sport';
+    if (age !== null && age > 5) return 'matic-lama';
+    return 'matic-baru';
+  }
+
+  global.MCS = { S, activeBike, ctxFor, loadAll, setActiveBike, defaultReminders, guessSegment };
 })(window);

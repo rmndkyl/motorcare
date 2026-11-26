@@ -216,7 +216,7 @@
           div.style.cssText = 'display:flex;justify-content:' + (isUser ? 'flex-end' : 'flex-start');
           div.innerHTML = '<div style="max-width:88%;padding:10px 12px;border-radius:' + (isUser ? '14px 14px 4px 14px' : '14px 14px 14px 4px') +
             ';background:' + (isUser ? 'var(--accent)' : 'var(--surface-2)') +
-            ';color:' + (isUser ? 'oklch(0.16 0.01 60)' : 'var(--text)') +
+            ';color:' + (isUser ? 'var(--on-accent)' : 'var(--text)') +
             ';font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word">' + CU.esc(text) + '</div>';
           chat.appendChild(div);
           chat.scrollTop = chat.scrollHeight;
