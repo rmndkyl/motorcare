@@ -17,6 +17,56 @@
     CU.toast('Backup tersimpan (' + parts + ' entri)', 'ok');
   }
 
+  // Validasi bentuk data sebelum masuk database. File backup bisa datang dari mana saja —
+  // termasuk versi yang sudah dimanipulasi. Yang tidak berbentuk gambar dibuang di sini,
+  // bukan hanya saat render, supaya data kotor tidak pernah tersimpan.
+  const IMG_RE = /^data:image\/(png|jpe?g|webp|gif|avif);base64,[A-Za-z0-9+/=\s]+$/i;
+  const BLOB_RE = /^blob:https?:/i;
+
+  function cleanImg(v) {
+    if (typeof v !== 'string') return '';
+    const s = v.trim();
+    return (IMG_RE.test(s) || BLOB_RE.test(s)) ? s : '';
+  }
+
+  function sanitizeRow(store, row) {
+    const r = Object.assign({}, row);
+    if (typeof r.id !== 'string' || !r.id) r.id = MC.uid();
+    if (typeof r.bikeId !== 'string') r.bikeId = '';
+
+    // foto: objek {depan,samping,belakang} untuk bikes, array untuk services/damages, string untuk docs
+    if (store === 'bikes' && r.photos && typeof r.photos === 'object' && !Array.isArray(r.photos)) {
+      const clean = {};
+      Object.keys(r.photos).forEach((k) => {
+        const u = cleanImg(r.photos[k]);
+        if (u) clean[k] = u;
+      });
+      r.photos = clean;
+    } else if (Array.isArray(r.photos)) {
+      r.photos = r.photos.map(cleanImg).filter(Boolean);
+    }
+    if (store === 'docs') r.dataUrl = cleanImg(r.dataUrl) || null;
+
+    // teks: buang kontrol & batasi panjang, supaya satu field tidak bisa
+    // menabrakkan seluruh tampilan atau menyimpan payload raksasa
+    ['nickname', 'brand', 'model', 'plate', 'color', 'note', 'name', 'part', 'symptoms', 'shop', 'type', 'label']
+      .forEach((k) => {
+        if (typeof r[k] === 'string') {
+          r[k] = r[k].replace(/[\u0000-\u001F\u007F]/g, ' ').slice(0, 500);
+        }
+      });
+
+    // angka: tolak negatif / NaN untuk odometer dan biaya
+    ['km', 'cost', 'amount', 'estCost', 'currentKm', 'startKm', 'intervalKm', 'intervalDays'].forEach((k) => {
+      if (r[k] !== undefined && r[k] !== null && r[k] !== '') {
+        const n = Number(r[k]);
+        r[k] = Number.isFinite(n) && n >= 0 ? n : null;
+      }
+    });
+
+    return r;
+  }
+
   function downloadFile(content, filename, mime) {
     const blob = new Blob([content], { type: mime || 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -42,6 +92,11 @@
           CU.toast('File ini bukan backup MOTORCARE', 'err');
           return;
         }
+        // tolak file absurd sebelum diproses (cegah browser/HP macet)
+        if (f.size > 40 * 1024 * 1024) {
+          CU.toast('File terlalu besar (maks 40 MB). Periksa lagi file backup-nya.', 'err');
+          return;
+        }
         const counts = Object.keys(parsed.data).map((k) => k + ': ' + (parsed.data[k] || []).length).join(', ');
         const ok = await CU.confirmDialog({
           title: 'Impor backup?',
@@ -51,17 +106,18 @@
         });
         if (!ok) return;
 
-        let imported = 0;
+        let imported = 0, rejected = 0;
         for (const store of STORES) {
           const rows = parsed.data[store] || [];
-          for (const r of rows) {
-            if (!r.id) r.id = MC.uid();
+          for (const raw of rows) {
+            if (!raw || typeof raw !== 'object') { rejected++; continue; }
+            const r = sanitizeRow(store, raw);
             await MC.Store.put(store, r);
             imported++;
           }
         }
         await MCS.loadAll();
-        CU.toast(imported + ' entri dipulihkan', 'ok');
+        CU.toast(imported + ' entri dipulihkan' + (rejected ? ', ' + rejected + ' ditolak' : ''), 'ok');
         if (global.MCApp) global.MCApp.refresh();
       } catch (e) {
         CU.toast('Gagal impor: ' + e.message, 'err');

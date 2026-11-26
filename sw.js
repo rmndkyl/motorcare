@@ -2,7 +2,7 @@
  * Cache-first untuk aset aplikasi supaya bisa dipakai tanpa internet.
  * Data user TIDAK pernah dikirim ke mana pun; SW hanya menyajikan file statis.
  */
-const VERSION = 'motorcare-v2.0.0';
+const VERSION = 'motorcare-v2.1.0';
 const ASSETS = [
   './',
   './index.html',

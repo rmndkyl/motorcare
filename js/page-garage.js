@@ -25,7 +25,7 @@
       const photo = (b.photos || {}).samping || (b.photos || {}).depan;
       const tone = h.tone;
       html += '<button class="bike-card' + (active ? ' active' : '') + '" data-act="select-bike" data-id="' + b.id + '">' +
-        '<span class="thumb">' + (photo ? '<img src="' + photo + '" alt="">' : I.icon('bike', 26)) + '</span>' +
+        '<span class="thumb">' + (CU.safeImgSrc(photo) ? CU.imgTag(photo, 'Foto ' + b.nickname) : I.icon('bike', 26)) + '</span>' +
         '<span class="info">' +
           '<span class="n">' + CU.esc(b.nickname) + '</span>' +
           '<span class="m">' + CU.esc([b.brand, b.model].filter(Boolean).join(' ')) + (b.plate ? ' · ' + CU.esc(b.plate) : '') + '</span>' +
@@ -47,7 +47,7 @@
       const photos = Object.entries(bike.photos || {});
       const heroP = (bike.photos || {}).depan || (bike.photos || {}).samping;
       if (heroP) {
-        html += '<img src="' + heroP + '" alt="Foto ' + CU.esc(bike.nickname) + '" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block">';
+        html += CU.imgTag(heroP, 'Foto ' + bike.nickname, 'style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block"');
       }
       html += '<div style="padding:14px">';
       const rows = [

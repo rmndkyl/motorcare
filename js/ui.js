@@ -15,6 +15,30 @@
     return t.content.firstElementChild;
   }
 
+  /* ---------- URL gambar aman ----------
+   * Semua foto di aplikasi ini SAH hanya berupa data URL gambar. Menyisipkan nilai
+   * mentah ke `<img src="...">` membuka jalur XSS: file backup yang dimanipulasi bisa
+   * berisi `x" onerror="...` dan payload itu dieksekusi saat foto dirender.
+   * Jadi: allowlist ketat, bukan escape. Apapun yang bukan gambar -> tolak.
+   */
+  function safeImgSrc(url) {
+    if (typeof url !== 'string') return '';
+    const u = url.trim();
+    // data URL gambar (hasil kompres canvas)
+    if (/^data:image\/(png|jpe?g|webp|gif|avif);base64,[A-Za-z0-9+/=\s]+$/i.test(u)) return u;
+    // blob lokal (preview sebelum disimpan)
+    if (/^blob:https?:/i.test(u)) return u;
+    // path relatif di dalam aplikasi (aset statis)
+    if (/^icons\/[A-Za-z0-9._-]+\.(png|jpg|jpeg|webp|svg)$/i.test(u)) return u;
+    return '';
+  }
+
+  function imgTag(url, alt, attrs) {
+    const src = safeImgSrc(url);
+    if (!src) return '';
+    return '<img src="' + src + '" alt="' + esc(alt || '') + '"' + (attrs ? ' ' + attrs : '') + '>';
+  }
+
   /* ---------- toast ---------- */
   let toastTimer = null;
   function toast(msg, kind) {
@@ -158,7 +182,7 @@
         slots.map((s, i) =>
           '<div class="photo-slot" data-slot="' + i + '">' +
             (s.dataUrl
-              ? '<img src="' + s.dataUrl + '" alt="' + esc(s.label) + '">' +
+              ? imgTag(s.dataUrl, s.label) +
                 '<button type="button" class="del" data-delslot="' + i + '" aria-label="Hapus ' + esc(s.label) + '">' + I.icon('x', 11) + '</button>'
               : I.icon('camera', 20)) +
             '<span class="tag">' + esc(s.label) + '</span>' +
@@ -224,6 +248,7 @@
   global.MCU = {
     esc, el, toast, sheet, closeTopSheet, anySheetOpen, confirmDialog,
     field, input, textarea, select, formValues,
-    photoPicker, wirePhotoPicker, empty, badge, bytes
+    photoPicker, wirePhotoPicker, empty, badge, bytes,
+    safeImgSrc, imgTag
   };
 })(window);

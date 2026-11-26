@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <meta name="theme-color" content="#16181c">
 <meta name="color-scheme" content="dark">
+<!-- Content Security Policy: pertahanan lapis kedua terhadap XSS.
+     'unsafe-inline' pada script TIDAK dipakai. Gaya inline diizinkan karena seluruh
+     CSS aplikasi ditulis sebagai atribut style (tanpa itu layout pecah), tapi script
+     hanya boleh dari origin sendiri. connect-src dibuka untuk provider AI pilihan user. -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data: blob:;
+  font-src 'self';
+  connect-src 'self' https:;
+  media-src 'self' data: blob:;
+  object-src 'none';
+  frame-src 'none';
+  frame-ancestors 'none';
+  base-uri 'none';
+  form-action 'none';
+"> 
 <title>MOTORCARE — Rekam Kesehatan Motor</title>
 <meta name="description" content="Buku kesehatan digital untuk sepeda motor: catat servis, pantau kondisi komponen, lacak biaya, dan ingat jadwal perawatan. Data tersimpan di HP kamu sendiri.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -14,25 +32,25 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MOTORCARE">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="stylesheet" href="css/app.css?v=6f5055c060">
+<link rel="stylesheet" href="css/app.css?v=aafbfff0b1">
 </head>
 <body>
 <div id="app"></div>
 
-<script src="js/core.js?v=6f5055c060"></script>
-<script src="js/domain.js?v=6f5055c060"></script>
-<script src="js/icons.js?v=6f5055c060"></script>
-<script src="js/ui.js?v=6f5055c060"></script>
-<script src="js/state.js?v=6f5055c060"></script>
-<script src="js/page-bikeform.js?v=6f5055c060"></script>
-<script src="js/page-home.js?v=6f5055c060"></script>
-<script src="js/page-garage.js?v=6f5055c060"></script>
-<script src="js/page-care.js?v=6f5055c060"></script>
-<script src="js/page-history.js?v=6f5055c060"></script>
-<script src="js/page-profile.js?v=6f5055c060"></script>
-<script src="js/forms.js?v=6f5055c060"></script>
-<script src="js/data-io.js?v=6f5055c060"></script>
-<script src="js/ai.js?v=6f5055c060"></script>
-<script src="js/app.js?v=6f5055c060"></script>
+<script src="js/core.js?v=aafbfff0b1"></script>
+<script src="js/domain.js?v=aafbfff0b1"></script>
+<script src="js/icons.js?v=aafbfff0b1"></script>
+<script src="js/ui.js?v=aafbfff0b1"></script>
+<script src="js/state.js?v=aafbfff0b1"></script>
+<script src="js/page-bikeform.js?v=aafbfff0b1"></script>
+<script src="js/page-home.js?v=aafbfff0b1"></script>
+<script src="js/page-garage.js?v=aafbfff0b1"></script>
+<script src="js/page-care.js?v=aafbfff0b1"></script>
+<script src="js/page-history.js?v=aafbfff0b1"></script>
+<script src="js/page-profile.js?v=aafbfff0b1"></script>
+<script src="js/forms.js?v=aafbfff0b1"></script>
+<script src="js/data-io.js?v=aafbfff0b1"></script>
+<script src="js/ai.js?v=aafbfff0b1"></script>
+<script src="js/app.js?v=aafbfff0b1"></script>
 </body>
 </html>

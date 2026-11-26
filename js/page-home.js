@@ -27,7 +27,7 @@
     /* ---- hero ---- */
     html += '<div class="hero">' +
       '<div class="hero-img' + (heroPhoto ? '' : ' no-photo') + '">' +
-        (heroPhoto ? '<img src="' + heroPhoto + '" alt="Foto ' + CU.esc(bike.nickname) + '">'
+        (CU.safeImgSrc(heroPhoto) ? CU.imgTag(heroPhoto, 'Foto ' + bike.nickname)
           : '<div class="ph">' + I.icon('bike', 30) +
               '<div class="phtxt"><b>Belum ada foto motor</b><span>Foto memudahkan saat ke bengkel</span></div>' +
               '<button class="addphoto" data-act="editbike">Tambah</button></div>') +

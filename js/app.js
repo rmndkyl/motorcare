@@ -231,7 +231,7 @@
     }
     if (sv.note) body += '<div class="sec-title">Catatan</div><div class="banner info">' + I.icon('info') + '<span>' + CU.esc(sv.note) + '</span></div>';
     if ((sv.photos || []).length) {
-      body += '<div class="sec-title">Nota</div><img src="' + sv.photos[0] + '" alt="Nota servis" style="width:100%;border-radius:12px">';
+      body += '<div class="sec-title">Nota</div>' + CU.imgTag(sv.photos[0], 'Nota servis', 'style="width:100%;border-radius:12px"');
     }
 
     const s = CU.sheet({
@@ -269,7 +269,7 @@
     if (dm.note) body += '<div class="sec-title">Catatan</div><p style="font-size:13px;color:var(--text-2);line-height:1.5;margin:0">' + CU.esc(dm.note) + '</p>';
     if ((dm.photos || []).length) {
       body += '<div class="sec-title">Foto</div><div style="display:flex;gap:8px;flex-wrap:wrap">' +
-        dm.photos.map((p) => '<img src="' + p + '" alt="Foto kerusakan" style="width:calc(50% - 4px);border-radius:10px">').join('') + '</div>';
+        dm.photos.map((p) => CU.imgTag(p, 'Foto kerusakan', 'style="width:calc(50% - 4px);border-radius:10px"')).join('') + '</div>';
     }
     body += '<div class="sec-title">Ubah status</div><div class="seg" data-statusseg>' +
       MC.DAMAGE_STATUS.map((x) => '<button data-st="' + x.id + '" class="' + (x.id === dm.status ? 'on' : '') + '">' + x.label.split(' ')[0] + '</button>').join('') + '</div>';
@@ -311,7 +311,7 @@
       (doc.date ? dRow('Berlaku', MC.fmtDate(doc.date)) : '') +
     '</div>';
     if (doc.dataUrl) {
-      body += '<img src="' + doc.dataUrl + '" alt="' + CU.esc(doc.name) + '" style="width:100%;border-radius:12px;margin-top:12px">';
+      body += CU.imgTag(doc.dataUrl, doc.name, 'style="width:100%;border-radius:12px;margin-top:12px"');
     } else {
       body += '<div class="banner info" style="margin-top:12px">' + I.icon('info') + '<span>Belum ada foto dokumen.</span></div>';
     }
