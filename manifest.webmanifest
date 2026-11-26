@@ -1,0 +1,23 @@
+{
+  "name": "MOTORCARE — Rekam Kesehatan Motor",
+  "short_name": "MOTORCARE",
+  "description": "Buku kesehatan digital sepeda motor: servis, kondisi komponen, biaya, dan jadwal perawatan. Data tersimpan di perangkat.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#16181c",
+  "theme_color": "#16181c",
+  "categories": ["auto", "utilities", "productivity"],
+  "lang": "id",
+  "dir": "ltr",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Catat Servis", "short_name": "Servis", "url": "./index.html#care", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Catat Kilometer", "short_name": "Odometer", "url": "./index.html#history", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
