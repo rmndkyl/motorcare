@@ -183,8 +183,10 @@
     let html = '';
 
     // gauge ringkas
+    // 'unknown' (belum ada data) TIDAK boleh jatuh ke var(--line): itu warna garis,
+    // dan sebagai teks 18px rasionya ~1.4 (praktis tak terbaca). Pakai warna teks.
     const toneVar = health.tone === 'ok' ? 'var(--ok)' : health.tone === 'warn' ? 'var(--warn)'
-      : health.tone === 'warn2' ? 'var(--warn2)' : health.tone === 'danger' ? 'var(--danger)' : 'var(--line)';
+      : health.tone === 'warn2' ? 'var(--warn2)' : health.tone === 'danger' ? 'var(--danger)' : 'var(--text-2)';
     html += '<div class="card" style="margin-bottom:14px">' +
       '<div class="score-wrap">' +
         '<div class="gauge">' + I.ring(health.score, toneVar) +
