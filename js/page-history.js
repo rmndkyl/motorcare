@@ -167,7 +167,7 @@
       '<div class="stat"><div class="k">KM saat ini</div><div class="v">' + MC.fmtNum(st.km) + ' <small>km</small></div></div>' +
       '<div class="stat"><div class="k">Total jarak</div><div class="v">' + MC.fmtNum(st.totalDist) + ' <small>km</small></div></div>' +
       '<div class="stat"><div class="k">Rata-rata/bulan</div><div class="v" style="font-size:16px">' + MC.fmtNum(st.avgMonthly) + ' <small>km</small></div></div>' +
-      '<div class="stat"><div class="k">Umur pakai</div><div class="v" style="font-size:16px">' + (st.days !== null ? Math.round(st.days / 30) + ' <small>bln</small>' : '—') + '</div></div>' +
+      '<div class="stat"><div class="k">Umur pakai</div><div class="v" style="font-size:16px">' + (st.days !== null && st.days >= 30 ? Math.round(st.days / 30) + ' <small>bln</small>' : st.daysImplausible ? '<small>isi tgl mulai</small>' : st.days !== null ? st.days + ' <small>hari</small>' : '—') + '</div></div>' +
     '</div>';
 
     if (st.monthly.length) {

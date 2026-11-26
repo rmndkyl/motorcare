@@ -17,7 +17,8 @@
 
     const urgent = reminders.filter((r) => r.state === 'overdue' || r.state === 'soon').slice(0, 3);
     const openDmg = ctx.damages.filter((d) => d.status !== 'selesai');
-    const nextSvc = reminders.find((r) => r.state !== 'no-baseline');
+    const nextSvc = reminders.find((r) => r.state === 'overdue' || r.state === 'soon' || r.state === 'ok');
+    const needsBaseline = reminders.filter((r) => r.state === 'needs-baseline');
 
     const heroPhoto = (bike.photos || {}).samping || (bike.photos || {}).depan || (bike.photos || {}).belakang;
 
@@ -58,9 +59,9 @@
           '<div class="kicker">Skor kesehatan</div>' +
           '<div class="state" style="color:' + toneVar + '">' + CU.esc(health.label) + '</div>' +
           '<div class="sub">' + (health.score === null
-            ? 'Belum ada pemeriksaan komponen'
+            ? 'Periksa ' + (health.checked === 0 ? 'komponen dulu' : 'komponen lain') + ' untuk dapat skor'
             : health.checked + ' dari ' + health.total + ' komponen sudah diperiksa') + '</div>' +
-          '<button class="btn sm ghost" data-act="go-check">' + I.icon('gauge') + 'Periksa</button>' +
+          '<button class="btn sm ' + (health.score === null ? 'primary' : 'ghost') + '" data-act="go-check">' + I.icon('gauge') + (health.score === null ? 'Mulai periksa' : 'Periksa') + '</button>' +
         '</div>' +
       '</div>' +
       (health.factors.length
@@ -82,12 +83,28 @@
         (nextSvc && nextSvc.kmLeft !== null && nextSvc.kmLeft < 1000 ? '15px' : '17px') + '">' +
         (nextSvc && nextSvc.kmLeft !== null ? MC.fmtNum(Math.max(0, nextSvc.kmLeft)) + ' <small>km lagi</small>'
           : nextSvc && nextSvc.daysLeft !== null ? Math.max(0, nextSvc.daysLeft) + ' <small>hari lagi</small>'
+          : needsBaseline.length ? '<small style="color:var(--accent-text)">isi riwayat</small>'
           : '<small>belum ada</small>') + '</div></div>' +
       '<div class="stat"><div class="k">Pengeluaran bulan ini</div><div class="v" style="font-size:16px">' + MC.fmtRp(exp.monthTotal) + '</div></div>' +
       '<div class="stat"><div class="k">Total perawatan</div><div class="v" style="font-size:16px">' + MC.fmtRp(exp.allTotal) + '</div></div>' +
     '</div>';
 
     /* ---- reminder alert ---- */
+    if (needsBaseline.length && !urgent.length) {
+      html += '<div class="card" style="margin-top:10px;border-color:var(--accent-line)">' +
+        '<div style="display:flex;gap:10px;align-items:flex-start">' +
+          '<span style="color:var(--accent);flex:none;margin-top:1px">' + I.icon('info', 17) + '</span>' +
+          '<div style="flex:1">' +
+            '<div style="font-size:13px;font-weight:600;margin-bottom:3px">Biar jadwalnya akurat</div>' +
+            '<div style="font-size:12px;color:var(--text-2);line-height:1.5">' +
+              'Catat servis terakhir motor ini. Setelah itu aplikasi tahu kapan oli, CVT, dan ' +
+              'komponen lain harus diganti — sekarang belum bisa menebak.' +
+            '</div>' +
+            '<button class="btn sm primary" style="margin-top:9px" data-act="add-service">' + I.icon('plus') + 'Catat servis terakhir</button>' +
+          '</div>' +
+        '</div></div>';
+    }
+
     if (urgent.length) {
       html += '<div class="sec-title">Perlu tindakan</div>';
       html += '<div class="card" style="padding:6px 14px"><div class="rows">';

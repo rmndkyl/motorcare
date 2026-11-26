@@ -36,8 +36,8 @@
       '</div>' +
 
       '<div class="grid2">' +
-        CU.field('Tanggal mulai dipakai', CU.input('startDate', b.startDate || MC.todayISO(), { type: 'date' })) +
-        CU.field('KM saat mulai', CU.input('startKm', b.startKm === undefined ? '' : b.startKm, { type: 'number', min: 0, placeholder: '0', inputmode: 'numeric' })) +
+        CU.field('Tanggal mulai dipakai', CU.input('startDate', b.startDate || MC.todayISO(), { type: 'date' }), 'Tanggal motor mulai kamu pakai') +
+        CU.field('KM saat mulai', CU.input('startKm', b.startKm === undefined ? '' : b.startKm, { type: 'number', min: 0, placeholder: '0', inputmode: 'numeric' }), 'Untuk motor bekas: isi KM saat kamu beli') +
       '</div>' +
 
       '<div class="grid2">' +

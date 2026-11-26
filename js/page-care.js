@@ -90,12 +90,26 @@
     const rems = MCD.buildReminders(bike, ctx.services, ctx.reminders, km);
     let html = '';
 
-    const groups = { overdue: [], soon: [], ok: [], unknown: [], 'no-baseline': [] };
+    const groups = { overdue: [], soon: [], 'needs-baseline': [], ok: [], unknown: [], 'no-baseline': [] };
     rems.forEach((r) => { (groups[r.state] || groups.unknown).push(r); });
 
     if (groups.overdue.length) {
       html += '<div class="banner danger" style="margin-bottom:12px">' + I.icon('alert') +
         '<span><b>' + groups.overdue.length + ' perawatan terlewat.</b> Motor berisiko kalau dibiarkan — minimal periksa kondisinya.</span></div>';
+    }
+    if (groups['needs-baseline'].length) {
+      html += '<div class="card" style="margin-bottom:12px;border-color:var(--accent-line)">' +
+        '<div style="display:flex;gap:10px;align-items:flex-start">' +
+          '<span style="color:var(--accent);flex:none;margin-top:1px">' + I.icon('info', 17) + '</span>' +
+          '<div style="flex:1">' +
+            '<div style="font-size:13px;font-weight:600;margin-bottom:3px">' + groups['needs-baseline'].length + ' jadwal belum punya titik mulai</div>' +
+            '<div style="font-size:12px;color:var(--text-2);line-height:1.5">' +
+              'Aplikasi belum tahu kapan komponen ini terakhir diganti. Catat servis terakhirnya, ' +
+              'atau isi kolom "terakhir ganti" saat mengedit pengingat. Setelah itu hitungannya akurat.' +
+            '</div>' +
+            '<button class="btn sm primary" style="margin-top:9px" data-act="add-service">' + I.icon('plus') + 'Catat servis terakhir</button>' +
+          '</div>' +
+        '</div></div>';
     }
 
     html += '<button class="btn primary block" data-act="add-reminder" style="margin-bottom:14px">' +
@@ -104,6 +118,7 @@
     const sections = [
       ['overdue', 'Terlewat', 'danger'],
       ['soon', 'Segera', 'warn'],
+      ['needs-baseline', 'Belum ada riwayat', 'accent'],
       ['ok', 'Terjadwal', 'ok'],
       ['no-baseline', 'Belum ada dasar', 'unknown']
     ];
@@ -114,17 +129,21 @@
       html += '<div class="sec-title">' + title + ' (' + items.length + ')</div>';
       html += '<div class="card" style="padding:6px 14px"><div class="rows">';
       items.forEach((r) => {
+        const nb = r.state === 'needs-baseline';
         html += '<button class="row" data-act="edit-reminder" data-id="' + r.id + '">' +
           '<span class="ic" style="color:var(--' + tone + ')">' + I.icon('clock') + '</span>' +
           '<span class="body">' +
             '<span class="t">' + CU.esc(r.label) + '</span>' +
             '<span class="s">' + reminderSub(r) + '</span>' +
           '</span>' +
-          '<span class="end"><div style="font-size:12.5px;font-weight:600;color:var(--' + tone + ')">' +
-            (r.kmLeft !== null ? (r.state === 'overdue' ? '−' + MC.fmtNum(Math.abs(r.kmLeft)) : MC.fmtNum(r.kmLeft)) + ' km'
-              : r.daysLeft !== null ? (r.state === 'overdue' ? '−' + Math.abs(r.daysLeft) : r.daysLeft) + ' hari'
-              : '—') + '</div>' +
-            (r.nextDate ? '<div class="d">' + MC.fmtDate(r.nextDate, { day: 'numeric', month: 'short' }) + '</div>' : '') +
+          '<span class="end">' +
+            (nb
+              ? '<div style="font-size:11.5px;font-weight:600;color:var(--accent-text)">isi<br>riwayat</div>'
+              : '<div style="font-size:12.5px;font-weight:600;color:var(--' + tone + ')">' +
+                  (r.kmLeft !== null ? (r.state === 'overdue' ? '−' + MC.fmtNum(Math.abs(r.kmLeft)) : MC.fmtNum(r.kmLeft)) + ' km'
+                    : r.daysLeft !== null ? (r.state === 'overdue' ? '−' + Math.abs(r.daysLeft) : r.daysLeft) + ' hari'
+                    : '—') + '</div>' +
+                (r.nextDate ? '<div class="d">' + MC.fmtDate(r.nextDate, { day: 'numeric', month: 'short' }) + '</div>' : '')) +
           '</span>' +
         '</button>';
       });
@@ -141,8 +160,13 @@
     const parts = [];
     if (r.intervalKm) parts.push('tiap ' + MC.fmtNum(r.intervalKm) + ' km');
     if (r.intervalDays) parts.push('tiap ' + r.intervalDays + ' hari');
-    if (r.lastKm !== null && r.lastKm !== undefined) parts.push('terakhir ' + MC.fmtNum(r.lastKm) + ' km');
-    else if (r.lastDate) parts.push('terakhir ' + MC.fmtDate(r.lastDate, { day: 'numeric', month: 'short', year: '2-digit' }));
+    if (r.estimated) {
+      parts.push('riwayat servis belum ada');
+    } else if (r.lastKm !== null && r.lastKm !== undefined) {
+      parts.push('terakhir ' + MC.fmtNum(r.lastKm) + ' km');
+    } else if (r.lastDate) {
+      parts.push('terakhir ' + MC.fmtDate(r.lastDate, { day: 'numeric', month: 'short', year: '2-digit' }));
+    }
     return parts.join(' · ') || 'Belum ada data dasar';
   }
 

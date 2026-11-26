@@ -61,6 +61,16 @@
       if (r.lastDoneKm !== null && r.lastDoneKm !== undefined && r.lastDoneKm !== '') lastKm = +r.lastDoneKm;
       if (r.lastDoneDate) lastDate = r.lastDoneDate;
 
+      /* Kalau tidak ada riwayat servis, kita TIDAK TAHU kapan terakhir diganti.
+         Menebak dari KM awal lalu menampilkan "terlewat 60.000 km" adalah angka palsu
+         yang bikin panik tanpa guna. Jadi: tetap hitung jadwal saran (biar user tahu
+         intervalnya), tapi statusnya 'needs-baseline' + CTA "catat servis terakhir". */
+      let estimated = false;
+      if (lastKm === null && lastDate === null && bike) {
+        if (bike.startKm !== null && bike.startKm !== undefined) { lastKm = +bike.startKm; estimated = true; }
+        if (bike.startDate) { lastDate = bike.startDate; estimated = true; }
+      }
+
       const nextKm = (r.intervalKm && lastKm !== null) ? lastKm + +r.intervalKm : null;
       const nextDate = (r.intervalDays && lastDate) ? MC.addDays(lastDate, +r.intervalDays) : null;
 
@@ -69,6 +79,7 @@
 
       let state = 'unknown';   // tidak ada data dasar
       if (nextDate === null && nextKm === null) state = 'no-baseline';
+      else if (estimated) state = 'needs-baseline';   // jadwal ada, tapi dasar hitungannya tebakan
       else {
         const kmOver = kmLeft !== null && kmLeft <= 0;
         const dateOver = daysLeft !== null && daysLeft <= 0;
@@ -81,14 +92,14 @@
 
       out.push({
         id: r.id, kind: r.kind, label: r.label || kindLabel(r.kind),
-        nextKm, nextDate, kmLeft, daysLeft, state,
+        nextKm, nextDate, kmLeft, daysLeft, state, estimated,
         lastKm, lastDate, intervalKm: r.intervalKm, intervalDays: r.intervalDays,
         serviceType: r.serviceType
       });
     });
 
     // urut: paling mendesak dulu
-    const rank = { overdue: 0, soon: 1, ok: 2, 'no-baseline': 3, unknown: 4 };
+    const rank = { overdue: 0, soon: 1, 'needs-baseline': 2, ok: 3, 'no-baseline': 4, unknown: 5 };
     out.sort((a, b) => {
       if (rank[a.state] !== rank[b.state]) return rank[a.state] - rank[b.state];
       const av = a.kmLeft !== null ? a.kmLeft : (a.daysLeft !== null ? a.daysLeft * 50 : 999999);
@@ -145,6 +156,8 @@
     const base = score;
 
     // penalti dari servis yang lewat jadwal (bukan diagnosis, tapi bukti kelalaian)
+    // 'needs-baseline' tidak dihitung: jadwalnya sendiri masih tebakan, jadi tidak
+    // boleh dipakai menghukum skor
     const rem = buildReminders(bike, services, reminders, km);
     const overdue = rem.filter((r) => r.state === 'overdue');
     if (overdue.length) {
@@ -257,10 +270,14 @@
     }
     const totalDist = (km !== null && start !== null) ? km - start : null;
     const avgMonthly = monthly.length ? Math.round(monthly.reduce((a, b) => a + b.km, 0) / monthly.length) : null;
+    const days = (bike && bike.startDate) ? MC.daysBetween(bike.startDate, MC.todayISO()) : null;
 
     return {
       logs, km, start, totalDist, monthly, avgMonthly,
-      days: (bike && bike.startDate) ? MC.daysBetween(bike.startDate, MC.todayISO()) : null
+      days: (days !== null && days >= 0) ? days : null,
+      // umur pakai 0 hari lebih sering berarti tanggal mulai belum diisi benar,
+      // bukan motor baru — jangan tampilkan "0 bulan" seolah fakta
+      daysImplausible: days === 0
     };
   }
 
