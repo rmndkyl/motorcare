@@ -2,7 +2,7 @@
  * Cache-first untuk aset aplikasi supaya bisa dipakai tanpa internet.
  * Data user TIDAK pernah dikirim ke mana pun; SW hanya menyajikan file statis.
  */
-const VERSION = 'motorcare-v1.3.1';
+const VERSION = 'motorcare-v1.4.0';
 const ASSETS = [
   './',
   './index.html',
@@ -36,7 +36,16 @@ const ASSETS = [
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(VERSION)
-      .then((c) => c.addAll(ASSETS).catch(() => { /* jangan gagalkan install kalau satu aset hilang */ }))
+      .then((c) => {
+        // fetch dengan cache:'reload' supaya aset diambil dari server, bukan dari
+        // HTTP cache browser. Tanpa ini, SW baru bisa menyimpan versi LAMA kalau
+        // CDN masih menyajikan build sebelumnya tepat setelah deploy.
+        return Promise.all(ASSETS.map((url) =>
+          fetch(new Request(url, { cache: 'reload' }))
+            .then((res) => (res && res.ok) ? c.put(url, res) : null)
+            .catch(() => null)
+        ));
+      })
       .then(() => self.skipWaiting())
   );
 });
@@ -58,21 +67,27 @@ self.addEventListener('fetch', (e) => {
   // Jangan cache request ke API pihak ketiga (AI provider) — selalu network
   if (url.origin !== self.location.origin) return;
 
-  // Navigasi: network first, fallback ke cache (biar update langsung kelihatan)
-  if (req.mode === 'navigate') {
+  const isDoc = req.mode === 'navigate';
+  const isCode = /\.(?:js|css|webmanifest)$/.test(url.pathname);
+
+  // Navigasi & kode: network-first. Kode berubah tiap deploy, jadi cache-first
+  // akan menyajikan versi lama setelah update. Fallback ke cache saat offline.
+  if (isDoc || isCode) {
     e.respondWith(
-      fetch(req)
+      fetch(new Request(req, { cache: 'no-cache' }))
         .then((res) => {
-          const copy = res.clone();
-          caches.open(VERSION).then((c) => c.put('./index.html', copy)).catch(() => {});
+          if (res && res.status === 200 && res.type === 'basic') {
+            const copy = res.clone();
+            caches.open(VERSION).then((c) => c.put(isDoc ? './index.html' : req, copy)).catch(() => {});
+          }
           return res;
         })
-        .catch(() => caches.match('./index.html').then((r) => r || caches.match('./')))
+        .catch(() => caches.match(isDoc ? './index.html' : req))
     );
     return;
   }
 
-  // Aset: cache first
+  // Aset statis lain (font, ikon): cache-first
   e.respondWith(
     caches.match(req).then((hit) => {
       if (hit) return hit;

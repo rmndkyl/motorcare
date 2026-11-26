@@ -365,7 +365,11 @@
     // karena listener 'load' tidak akan pernah terpanggil lagi setelah event itu lewat
     if ('serviceWorker' in navigator) {
       const registerSW = () => {
-        navigator.serviceWorker.register('sw.js').catch(() => { /* offline mode opsional */ });
+        navigator.serviceWorker.register('sw.js').then((reg) => {
+          // paksa cek versi baru tiap kali app dibuka; tanpa ini SW bisa
+          // menyajikan cache lama berhari-hari setelah deploy
+          if (reg && reg.update) reg.update().catch(() => {});
+        }).catch(() => { /* offline mode opsional */ });
       };
       if (document.readyState === 'complete') registerSW();
       else window.addEventListener('load', registerSW);
