@@ -161,7 +161,8 @@
     if (r.intervalKm) parts.push('tiap ' + MC.fmtNum(r.intervalKm) + ' km');
     if (r.intervalDays) parts.push('tiap ' + r.intervalDays + ' hari');
     if (r.estimated) {
-      parts.push('riwayat servis belum ada');
+      // sengaja tidak menambah teks di sini: kolom kanan sudah bilang "isi riwayat",
+      // dan sub yang kepanjangan akan terpotong di tengah kata
     } else if (r.lastKm !== null && r.lastKm !== undefined) {
       parts.push('terakhir ' + MC.fmtNum(r.lastKm) + ' km');
     } else if (r.lastDate) {
