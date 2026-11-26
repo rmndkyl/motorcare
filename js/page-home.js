@@ -59,7 +59,7 @@
           '<div class="state" style="color:' + toneVar + '">' + CU.esc(health.label) + '</div>' +
           '<div class="sub">' + (health.score === null
             ? 'Belum ada pemeriksaan komponen'
-            : 'Dari ' + health.checked + ' dari ' + health.total + ' komponen yang diperiksa') + '</div>' +
+            : health.checked + ' dari ' + health.total + ' komponen sudah diperiksa') + '</div>' +
           '<button class="btn sm ghost" data-act="go-check">' + I.icon('gauge') + 'Periksa</button>' +
         '</div>' +
       '</div>' +

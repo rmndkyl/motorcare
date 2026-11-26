@@ -4,32 +4,32 @@
 
 @font-face {
   font-family: 'BC';
-  src: url('fonts/barlow-condensed-latin-500-normal.woff2') format('woff2');
+  src: url('../fonts/barlow-condensed-latin-500-normal.woff2') format('woff2');
   font-weight: 500; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'BC';
-  src: url('fonts/barlow-condensed-latin-700-normal.woff2') format('woff2');
+  src: url('../fonts/barlow-condensed-latin-700-normal.woff2') format('woff2');
   font-weight: 700; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'BC';
-  src: url('fonts/barlow-condensed-latin-800-normal.woff2') format('woff2');
+  src: url('../fonts/barlow-condensed-latin-800-normal.woff2') format('woff2');
   font-weight: 800; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Barlow';
-  src: url('fonts/barlow-latin-400-normal.woff2') format('woff2');
+  src: url('../fonts/barlow-latin-400-normal.woff2') format('woff2');
   font-weight: 400; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Barlow';
-  src: url('fonts/barlow-latin-500-normal.woff2') format('woff2');
+  src: url('../fonts/barlow-latin-500-normal.woff2') format('woff2');
   font-weight: 500; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: 'Barlow';
-  src: url('fonts/barlow-latin-600-normal.woff2') format('woff2');
+  src: url('../fonts/barlow-latin-600-normal.woff2') format('woff2');
   font-weight: 600; font-style: normal; font-display: swap;
 }
 
@@ -43,8 +43,8 @@
   --line-soft: oklch(0.265 0.008 265);
 
   --text:      oklch(0.965 0.003 265);
-  --text-2:    oklch(0.775 0.008 265);
-  --text-3:    oklch(0.615 0.010 265);
+  --text-2:    oklch(0.815 0.008 265);
+  --text-3:    oklch(0.665 0.010 265);
 
   --accent:      oklch(0.705 0.175 52);
   --accent-soft: oklch(0.705 0.175 52 / 0.14);
@@ -88,7 +88,9 @@ html, body {
 }
 
 body {
-  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 8px);
+  /* padding bawah di sini tidak berguna: #app yang jadi kontainer scroll.
+     Ruang untuk navbar dialokasikan lewat <main> + .page di bawah. */
+  padding-bottom: 0;
 }
 
 h1, h2, h3, h4, .disp {
@@ -144,7 +146,13 @@ a { color: var(--accent-text); text-decoration: none; }
 .iconbtn svg { width: 20px; height: 20px; }
 
 main { flex: 1; }
-.page { animation: pageIn 0.26s var(--ease); padding: var(--pad); padding-bottom: 36px; }
+.page {
+  animation: pageIn 0.26s var(--ease);
+  padding: var(--pad);
+  /* navbar fixed 62px + jarak visual: harus di sini, bukan di body —
+     body punya height:100% + border-box, jadi padding body tidak menambah ruang scroll */
+  padding-bottom: calc(var(--nav-h) + 18px + env(safe-area-inset-bottom, 0px));
+}
 @keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* ============ bottom nav ============ */
@@ -205,7 +213,7 @@ main { flex: 1; }
   position: relative; aspect-ratio: 16 / 9; background: var(--surface-2);
   display: grid; place-items: center; overflow: hidden;
 }
-.hero-img.no-photo { aspect-ratio: auto; height: 84px; }
+.hero-img.no-photo { aspect-ratio: auto; height: 72px; }
 .hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .hero-img .ph { color: var(--text-2); display: flex; align-items: center; gap: 10px; padding: 0 16px; width: 100%; }
 .hero-img .ph .phtxt { display: flex; flex-direction: column; gap: 1px; text-align: left; }

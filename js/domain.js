@@ -171,7 +171,7 @@
     if (high.length) {
       const pen = Math.min(10, high.length * 5);
       score -= pen;
-      factors.push({ text: high.length + ' kerusakan prioritas tinggi terbuka', tone: 'warn2', delta: -pen });
+      factors.push({ text: high.length + ' kerusakan prioritas tinggi belum ditangani', tone: 'warn2', delta: -pen });
     }
 
     // kesegaran data: odometer jarang di-update = skor tidak bisa dipercaya
