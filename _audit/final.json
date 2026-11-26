@@ -1,0 +1,143 @@
+{
+  "build": {
+    "assetHash": "f0440e1e40",
+    "scriptCount": 16,
+    "swVersion": "registered"
+  },
+  "contrast": {
+    "dark": {
+      "pairs": 174,
+      "fails": [],
+      "min": 5.11,
+      "worst": {
+        "text": "Hapus semua data",
+        "cls": "t",
+        "fg": "oklch(0.655 0.205 22)",
+        "bg": "oklch(0.205 0.008 265)",
+        "size": 14,
+        "weight": "500",
+        "ratio": 5.11,
+        "need": 4.5,
+        "large": false,
+        "route": "profile"
+      }
+    },
+    "light": {
+      "pairs": 174,
+      "fails": [],
+      "min": 4.43,
+      "worst": {
+        "text": "CARE",
+        "cls": "",
+        "fg": "oklch(0.55 0.17 45)",
+        "bg": "oklch(0.945 0.004 265)",
+        "size": 19,
+        "weight": "800",
+        "ratio": 4.43,
+        "need": 3.0,
+        "large": true,
+        "route": "home"
+      }
+    }
+  },
+  "layout": {
+    "scrollW": 390,
+    "innerW": 390,
+    "overflowX": false,
+    "navTop": 782,
+    "lastElBottom": 764,
+    "navOverlapsLast": false,
+    "reflow320_home": {
+      "sw": 320,
+      "iw": 320
+    },
+    "reflow320_scoreOpen": {
+      "sw": 320,
+      "iw": 320
+    }
+  },
+  "touch": {
+    "count": 0,
+    "items": []
+  },
+  "smoke": {
+    "saved": true,
+    "scoreWithBadOli": 93,
+    "base": 93,
+    "total": 12
+  },
+  "unknown_status": {
+    "scoreIsNull": true,
+    "score": null,
+    "checked": 0,
+    "mesinExcluded": true,
+    "mesinStatusLabel": "Status tidak dikenal",
+    "sanitizedCheckStatus": "perlu-diperiksa",
+    "sanitizedDamageStatus": "belum"
+  },
+  "acceptance": {
+    "p0_components_per_segment": {
+      "matic-baru": {
+        "n": 12,
+        "hasCvt": true,
+        "hasRantai": false,
+        "total": 12,
+        "consistent": true
+      },
+      "matic-lama": {
+        "n": 12,
+        "hasCvt": true,
+        "hasRantai": false,
+        "total": 12,
+        "consistent": true
+      },
+      "bebek-manual": {
+        "n": 12,
+        "hasCvt": false,
+        "hasRantai": true,
+        "total": 12,
+        "consistent": true
+      },
+      "sport": {
+        "n": 12,
+        "hasCvt": false,
+        "hasRantai": true,
+        "total": 12,
+        "consistent": true
+      }
+    },
+    "p0_all_segments_consistent": true,
+    "p1_interval_notice": {
+      "shown": true,
+      "exact": "Angka awal, belum diverifikasi ke buku servis. Interval ini disusun dari rekomendasi umum yang bered"
+    },
+    "p1_score_panel": {
+      "present": true,
+      "formula": "(100×3 + 100×3 + 100×3 + 100×2 + 100×3 + 100×1 + 100×2 + 100×2 + 100×1 + 100×2 + 100×2 + 100×2) ÷ 26 = 100 dasar",
+      "rows": 13,
+      "hasWeights": true,
+      "hasValues": true,
+      "hasPenaltySection": true
+    },
+    "p2_async_state": {
+      "during": {
+        "busy": "true",
+        "disabled": true,
+        "spinnerW": "15px",
+        "spinnerAnim": "spin",
+        "spinnerContent": "\"\""
+      },
+      "after": {
+        "busy": null,
+        "disabled": false,
+        "spinnerAnim": "none"
+      },
+      "rowDuring": {
+        "busy": "true",
+        "spinnerW": "15px",
+        "spinnerAnim": "spin"
+      }
+    }
+  },
+  "console": []
+}

@@ -8,7 +8,13 @@
 <!-- Content Security Policy: pertahanan lapis kedua terhadap XSS.
      'unsafe-inline' pada script TIDAK dipakai. Gaya inline diizinkan karena seluruh
      CSS aplikasi ditulis sebagai atribut style (tanpa itu layout pecah), tapi script
-     hanya boleh dari origin sendiri. connect-src dibuka untuk provider AI pilihan user. -->
+     hanya boleh dari origin sendiri. connect-src dibuka untuk provider AI pilihan user.
+
+     CATATAN: 'frame-ancestors' TIDAK ditulis di sini. Directive itu diabaikan browser
+     kalau dikirim lewat <meta> dan hanya menghasilkan console error di setiap load.
+     Clickjacking tetap tertutup karena GitHub Pages mengirim X-Frame-Options: deny,
+     dan 'frame-src none' di bawah mencegah halaman ini membingkai orang lain.
+     Kalau nanti pindah ke server sendiri, kirim frame-ancestors lewat header HTTP. -->
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
   script-src 'self';
@@ -19,10 +25,9 @@
   media-src 'self' data: blob:;
   object-src 'none';
   frame-src 'none';
-  frame-ancestors 'none';
   base-uri 'none';
   form-action 'none';
-"> 
+">
 <title>MOTORCARE — Rekam Kesehatan Motor</title>
 <meta name="description" content="Buku kesehatan digital untuk sepeda motor: catat servis, pantau kondisi komponen, lacak biaya, dan ingat jadwal perawatan. Data tersimpan di HP kamu sendiri.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -32,26 +37,26 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MOTORCARE">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="stylesheet" href="css/app.css?v=4c2aec4ef6">
-<script src="js/theme.js?v=4c2aec4ef6"></script>
+<link rel="stylesheet" href="css/app.css?v=f0440e1e40">
+<script src="js/theme.js?v=f0440e1e40"></script>
 </head>
 <body>
 <div id="app"></div>
 
-<script src="js/core.js?v=4c2aec4ef6"></script>
-<script src="js/domain.js?v=4c2aec4ef6"></script>
-<script src="js/icons.js?v=4c2aec4ef6"></script>
-<script src="js/ui.js?v=4c2aec4ef6"></script>
-<script src="js/state.js?v=4c2aec4ef6"></script>
-<script src="js/page-bikeform.js?v=4c2aec4ef6"></script>
-<script src="js/page-home.js?v=4c2aec4ef6"></script>
-<script src="js/page-garage.js?v=4c2aec4ef6"></script>
-<script src="js/page-care.js?v=4c2aec4ef6"></script>
-<script src="js/page-history.js?v=4c2aec4ef6"></script>
-<script src="js/page-profile.js?v=4c2aec4ef6"></script>
-<script src="js/forms.js?v=4c2aec4ef6"></script>
-<script src="js/data-io.js?v=4c2aec4ef6"></script>
-<script src="js/ai.js?v=4c2aec4ef6"></script>
-<script src="js/app.js?v=4c2aec4ef6"></script>
+<script src="js/core.js?v=f0440e1e40"></script>
+<script src="js/domain.js?v=f0440e1e40"></script>
+<script src="js/icons.js?v=f0440e1e40"></script>
+<script src="js/ui.js?v=f0440e1e40"></script>
+<script src="js/state.js?v=f0440e1e40"></script>
+<script src="js/page-bikeform.js?v=f0440e1e40"></script>
+<script src="js/page-home.js?v=f0440e1e40"></script>
+<script src="js/page-garage.js?v=f0440e1e40"></script>
+<script src="js/page-care.js?v=f0440e1e40"></script>
+<script src="js/page-history.js?v=f0440e1e40"></script>
+<script src="js/page-profile.js?v=f0440e1e40"></script>
+<script src="js/forms.js?v=f0440e1e40"></script>
+<script src="js/data-io.js?v=f0440e1e40"></script>
+<script src="js/ai.js?v=f0440e1e40"></script>
+<script src="js/app.js?v=f0440e1e40"></script>
 </body>
 </html>

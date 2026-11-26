@@ -1,0 +1,71 @@
+{
+  "empty": {
+    "bikes": 0,
+    "hasOnboarding": true,
+    "h1Count": 1,
+    "navCount": 5,
+    "routesSurviveNoBike": true
+  },
+  "partial": {
+    "score": 34,
+    "base": 50,
+    "checked": 3,
+    "total": 12,
+    "penaltyCount": 2,
+    "penaltyLabels": [
+      "1 jadwal perawatan terlewat",
+      "1 kerusakan kritis belum ditangani"
+    ],
+    "excludedCount": 9,
+    "excludedNoteShown": true,
+    "excludedNoteText": "Dikeluarkan dari penyebut (9): Rem belakang, Ban, Suspensi, Aki, Kelistrikan, Lampu, Sistem pendingin, CVT, Sistem bahan bakar.",
+    "finalLineShown": true,
+    "finalLineText": "50 − 16 penalti = 34",
+    "formulaText": "(100×3 + 40×3 + 10×3) ÷ 9 = 50 dasar",
+    "penaltyRows": 2,
+    "notCountedShownInGrid": 9
+  },
+  "manual": {
+    "segment": "bebek-manual",
+    "total": 12,
+    "gridComponents": [
+      "Mesin",
+      "Oli",
+      "Rem depan",
+      "Rem belakang",
+      "Ban",
+      "Suspensi",
+      "Aki",
+      "Kelistrikan",
+      "Lampu",
+      "Sistem pendingin",
+      "Rantai & gear",
+      "Sistem bahan bakar"
+    ],
+    "gridCount": 12,
+    "gridHasCvt": false,
+    "gridHasRantai": true,
+    "scoreIsNull": true,
+    "showsBelumAdaData": true,
+    "showsWhyEmpty": true,
+    "reminders": {
+      "showsCvt": false,
+      "showsOliGardan": false,
+      "showsRantai": false
+    }
+  },
+  "contrast_panel_open": {
+    "dark": {
+      "pairs": 23,
+      "fails": [],
+      "min": 5.11
+    },
+    "light": {
+      "pairs": 23,
+      "fails": [],
+      "min": 5.28
+    }
+  },
+  "nowBikes": [],
+  "console": []
+}

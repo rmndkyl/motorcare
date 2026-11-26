@@ -1,0 +1,282 @@
+{
+  "url": "http://127.0.0.1:59695/",
+  "viewport": "390x844",
+  "data": {
+    "bikes": [
+      {
+        "id": "mwxbvysvxfz5uwi",
+        "nick": "PCX MANDAYY",
+        "segment": null,
+        "trans": "matik",
+        "year": 2025,
+        "km": 12168
+      }
+    ],
+    "services": 1,
+    "checks": 15,
+    "reminders": 12,
+    "odoLog": 1
+  },
+  "p0_components": {
+    "segment": null,
+    "transmission": "matik",
+    "globalComponents": [
+      "mesin",
+      "oli",
+      "rem-depan",
+      "rem-belakang",
+      "ban",
+      "suspensi",
+      "aki",
+      "kelistrikan",
+      "lampu",
+      "pendingin",
+      "rantai-gear",
+      "cvt",
+      "bahan-bakar"
+    ],
+    "globalCount": 13,
+    "healthTotal": 13,
+    "healthChecked": 13,
+    "score": 100,
+    "remindersHaveCvt": true,
+    "remindersHaveOliGardan": false,
+    "remindersHaveRantai": true,
+    "checkFormComponents": 13
+  },
+  "p0_manual_sim": {
+    "manualReminderKinds": [
+      "servis-awal",
+      "oli-mesin",
+      "servis-berkala",
+      "filter-udara",
+      "busi",
+      "kampas-rem",
+      "ban",
+      "aki",
+      "rantai-gear",
+      "pajak",
+      "stnk"
+    ],
+    "manualHasCvtReminder": false,
+    "manualHealthTotal": 13,
+    "uiComponentCount": 13,
+    "contradiction": true
+  },
+  "p1_intervals": {
+    "maticLama": {
+      "servis-awal": [
+        1000,
+        30
+      ],
+      "oli-mesin": [
+        2000,
+        60
+      ],
+      "oli-gardan": [
+        8000,
+        240
+      ],
+      "servis-berkala": [
+        2000,
+        60
+      ],
+      "cvt": [
+        8000,
+        240
+      ],
+      "filter-udara": [
+        6000,
+        180
+      ],
+      "busi": [
+        8000,
+        365
+      ],
+      "kampas-rem": [
+        10000,
+        365
+      ],
+      "ban": [
+        20000,
+        1095
+      ],
+      "aki": [
+        20000,
+        730
+      ],
+      "rantai-gear": [
+        20000,
+        730
+      ]
+    },
+    "hints": [
+      {
+        "id": "matic-baru",
+        "label": "Matic / bebek (≤5 tahun)",
+        "hint": "Oli 4.000 km atau 4 bulan"
+      },
+      {
+        "id": "matic-lama",
+        "label": "Matic / bebek lama (>5 tahun)",
+        "hint": "Oli 2.000 km atau 2 bulan"
+      },
+      {
+        "id": "bebek-manual",
+        "label": "Bebek / motor manual",
+        "hint": "Oli 3.000 km atau 3 bulan"
+      },
+      {
+        "id": "sport",
+        "label": "Sport / oli sintetik",
+        "hint": "Oli 6.000 km atau 4 bulan"
+      }
+    ],
+    "uiSaysUnverified": false,
+    "uiSaysManualBook": false,
+    "bikeSegmentIsSet": false
+  },
+  "p1_score_expl": {
+    "visibleFactorLines": 0,
+    "hasWeightBreakdown": false,
+    "hasExpandableDetail": false,
+    "hasPerComponentValue": false,
+    "bodyHasPenaltyList": false
+  },
+  "p2_states": {
+    "btn": {
+      "bg": "oklch(0.615 0.17 45)",
+      "color": "oklch(0.995 0 0)",
+      "opacity": "1",
+      "transition": "filter, transform, background",
+      "cursor": "pointer",
+      "ariaBusy": null,
+      "disabled": false
+    },
+    "row": null,
+    "inp": null,
+    "comp": {
+      "bg": "oklch(0.962 0.004 265)",
+      "color": "oklch(0.215 0.012 265)",
+      "opacity": "1",
+      "transition": "background",
+      "cursor": "pointer",
+      "ariaBusy": null,
+      "disabled": false
+    },
+    "anyAriaBusy": false,
+    "anySpinner": false,
+    "disabledCount": 0
+  },
+  "contrast": {
+    "dark": {
+      "pairsChecked": 110,
+      "fails": [],
+      "min": 5.11
+    },
+    "light": {
+      "pairsChecked": 110,
+      "fails": [
+        {
+          "text": "Catat servis terakhir",
+          "cls": "btn sm primary",
+          "fg": "oklch(0.995 0 0)",
+          "bg": "oklch(0.615 0.17 45)",
+          "size": 12.5,
+          "weight": "700",
+          "ratio": 3.89,
+          "route": "home",
+          "need": 4.5
+        },
+        {
+          "text": "Catat Pemeriksaan",
+          "cls": "btn primary block",
+          "fg": "oklch(0.995 0 0)",
+          "bg": "oklch(0.615 0.17 45)",
+          "size": 14,
+          "weight": "700",
+          "ratio": 3.89,
+          "route": "care:cek",
+          "need": 4.5
+        },
+        {
+          "text": "Catat servis terakhir",
+          "cls": "btn sm primary",
+          "fg": "oklch(0.995 0 0)",
+          "bg": "oklch(0.615 0.17 45)",
+          "size": 12.5,
+          "weight": "700",
+          "ratio": 3.89,
+          "route": "care:reminder",
+          "need": 4.5
+        },
+        {
+          "text": "Tambah Pengingat",
+          "cls": "btn primary block",
+          "fg": "oklch(0.995 0 0)",
+          "bg": "oklch(0.615 0.17 45)",
+          "size": 14,
+          "weight": "700",
+          "ratio": 3.89,
+          "route": "care:reminder",
+          "need": 4.5
+        },
+        {
+          "text": "Pengeluaran",
+          "cls": "chip on",
+          "fg": "oklch(0.995 0 0)",
+          "bg": "oklch(0.615 0.17 45)",
+          "size": 12.5,
+          "weight": "600",
+          "ratio": 3.89,
+          "route": "history:biaya",
+          "need": 4.5
+        },
+        {
+          "text": "Catat Pengeluaran",
+          "cls": "btn primary block",
+          "fg": "oklch(0.995 0 0)",
+          "bg": "oklch(0.615 0.17 45)",
+          "size": 14,
+          "weight": "700",
+          "ratio": 3.89,
+          "route": "history:biaya",
+          "need": 4.5
+        }
+      ],
+      "min": 3.38
+    }
+  },
+  "console": [],
+  "layout": {
+    "scrollW": 390,
+    "innerW": 390,
+    "overflowX": false,
+    "navTop": 782,
+    "lastElBottom": 764,
+    "navOverlapsLast": false,
+    "reflow320": {
+      "scrollW": 320,
+      "innerW": 320
+    }
+  },
+  "scenarioF": {
+    "leaks": [
+      {
+        "route": "garage",
+        "leak": "bike B km visible while PCX active"
+      }
+    ],
+    "clean": false
+  },
+  "touch": {
+    "under24": [],
+    "count": 0
+  },
+  "storage": {
+    "estimate": {
+      "usage": 1392732,
+      "quota": 10738810972
+    }
+  }
+}

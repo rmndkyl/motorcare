@@ -269,17 +269,21 @@
   ];
 
   const SEGMENT_INTERVALS = {
+    // Matic tidak punya rantai & gir: rantai digantikan v-belt di dalam CVT.
+    // Sebelumnya baris 'rantai-gear' tetap ada di sini, sehingga motor matic
+    // mendapat pengingat "Rantai & gear" yang mustahil dikerjakan — dan user
+    // yang teliti akan mengira aplikasinya tidak tahu beda matic dan manual.
     'matic-baru': {
       'servis-awal': [1000, 30], 'oli-mesin': [4000, 120], 'oli-gardan': [8000, 240],
       'servis-berkala': [4000, 120], 'cvt': [8000, 240], 'filter-udara': [8000, 240],
       'busi': [8000, 365], 'kampas-rem': [10000, 365], 'ban': [20000, 1095],
-      'aki': [20000, 730], 'rantai-gear': [20000, 730]
+      'aki': [20000, 730]
     },
     'matic-lama': {
       'servis-awal': [1000, 30], 'oli-mesin': [2000, 60], 'oli-gardan': [8000, 240],
       'servis-berkala': [2000, 60], 'cvt': [8000, 240], 'filter-udara': [6000, 180],
       'busi': [8000, 365], 'kampas-rem': [10000, 365], 'ban': [20000, 1095],
-      'aki': [20000, 730], 'rantai-gear': [20000, 730]
+      'aki': [20000, 730]
     },
     'bebek-manual': {
       'servis-awal': [1000, 30], 'oli-mesin': [3000, 90],
@@ -293,6 +297,90 @@
       'busi': [10000, 365], 'kampas-rem': [10000, 365], 'rantai-gear': [4000, 120],
       'ban': [20000, 1095], 'aki': [20000, 730]
     }
+  };
+
+  /* ---------- komponen pemeriksaan per segmen ----------
+   * Sebelumnya satu daftar global dipakai untuk semua motor, jadi motor manual
+   * tetap ditanya soal CVT sementara pengingatnya sudah sadar-segmen. Itu
+   * inkonsistensi internal: pengingat bilang "tidak ada CVT", grid pemeriksaan
+   * bilang "periksa CVT", dan penyebut skor menghitung CVT.
+   *
+   * Sekarang daftar komponen diturunkan dari segmen. Motor CVT tidak punya
+   * rantai & gir; motor manual tidak punya CVT. Penyebut skor ikut menyesuaikan,
+   * karena komponen yang tidak ada tidak boleh dihitung sebagai "belum diperiksa".
+   *
+   * Catatan batas: ini per SEGMEN, bukan per model. Sistem pendingin tetap
+   * ditanyakan untuk semua karena motor berpendingin udara pun perlu diperiksa
+   * (sirip kotor, kipas). Yang tidak bisa kami ketahui tanpa buku servis per
+   * varian adalah ANGKA intervalnya — lihat INTERVAL_SOURCE di bawah.
+   */
+  const SEGMENT_COMPONENTS = {
+    'matic-baru': ['mesin', 'oli', 'rem-depan', 'rem-belakang', 'ban', 'suspensi',
+      'aki', 'kelistrikan', 'lampu', 'pendingin', 'cvt', 'bahan-bakar'],
+    'matic-lama': ['mesin', 'oli', 'rem-depan', 'rem-belakang', 'ban', 'suspensi',
+      'aki', 'kelistrikan', 'lampu', 'pendingin', 'cvt', 'bahan-bakar'],
+    'bebek-manual': ['mesin', 'oli', 'rem-depan', 'rem-belakang', 'ban', 'suspensi',
+      'aki', 'kelistrikan', 'lampu', 'pendingin', 'rantai-gear', 'bahan-bakar'],
+    'sport': ['mesin', 'oli', 'rem-depan', 'rem-belakang', 'ban', 'suspensi',
+      'aki', 'kelistrikan', 'lampu', 'pendingin', 'rantai-gear', 'bahan-bakar']
+  };
+
+  function guessSegment(bike) {
+    if (!bike) return 'matic-baru';
+    const trans = bike.transmission || 'matik';
+    const year = +bike.year || 0;
+    const thisYear = new Date().getFullYear();
+    const age = year ? thisYear - year : null;
+
+    if (trans === 'manual') return 'bebek-manual';
+    if (trans === 'semi') return 'sport';
+    if (age !== null && age > 5) return 'matic-lama';
+    return 'matic-baru';
+  }
+
+  // segmen efektif: yang dipilih user kalau sah, kalau tidak ditebak dari data
+  // motor. Data lama (sebelum fitur segmen ada) tidak punya field ini sama sekali.
+  function resolveSegment(bike) {
+    if (!bike) return 'matic-baru';
+    const valid = BIKE_SEGMENTS.map((s) => s.id);
+    if (bike.segment && valid.indexOf(bike.segment) >= 0) return bike.segment;
+    return guessSegment(bike);
+  }
+
+  function componentsFor(segment) {
+    const ids = SEGMENT_COMPONENTS[segment] || SEGMENT_COMPONENTS['matic-baru'];
+    return ids.map((id) => COMPONENTS.find((c) => c.id === id)).filter(Boolean);
+  }
+
+  // Apakah sejenis pengingat masuk akal untuk segmen ini?
+  // Dipakai dua arah: saat membuat pengingat default (jangan buat yang mustahil),
+  // dan saat menampilkan pengingat yang SUDAH tersimpan di perangkat user dari
+  // versi sebelumnya. Yang kedua penting: build lama sempat memberi motor matic
+  // pengingat "Rantai & gear". Data itu sudah ada di IndexedDB user, jadi tidak
+  // bisa dihapus dari kode — tapi tidak boleh juga ditampilkan seolah relevan.
+  function reminderApplies(kind, segment) {
+    const seg = segment || 'matic-baru';
+    const matic = seg === 'matic-baru' || seg === 'matic-lama';
+    if (kind === 'cvt' || kind === 'oli-gardan') return matic;
+    if (kind === 'rantai-gear') return !matic;
+    return true;
+  }
+
+  /* ---------- asal angka interval ----------
+   * verified: false berarti angka ini titik awal dari rekomendasi umum, BUKAN
+   * angka buku servis varian tertentu. UI wajib mengatakannya, karena menyajikan
+   * tebakan sebagai angka pabrikan adalah klaim palsu.
+   *
+   * Untuk Yamaha Mio M3 125 sumber publik saling bertentangan: dealer menyebut
+   * servis tiap 3.000 km / 3 bulan, blog resmi Yamaha menyebut "minimal 6 bulan
+   * atau 4.000 km", dan service manual menyebut 8.000-12.000 km untuk oli
+   * transmisi. Karena tidak ada satu angka resmi per varian yang bisa ditunjuk,
+   * semuanya tetap ditandai belum terverifikasi.
+   */
+  const INTERVAL_SOURCE = {
+    verified: false,
+    label: 'Angka awal, belum diverifikasi ke buku servis',
+    note: 'Interval ini disusun dari rekomendasi umum yang beredar di Indonesia, bukan dari buku servis varian motormu. Sumber publik untuk model yang sama saling berbeda. Sesuaikan dengan buku manual atau saran mekanik.'
   };
 
   const PRIORITIES = [
@@ -313,6 +401,7 @@
     todayISO, parseISO, daysBetween, addDays, fmtDate, fmtNum, fmtRp, fmtKm, monthKey, monthLabel,
     compressImage, readAsDataUrl,
     SERVICE_TYPES, COMPONENTS, CHECK_STATUS, EXPENSE_CATEGORIES, REMINDER_TEMPLATES, PRIORITIES, DAMAGE_STATUS,
-    BIKE_SEGMENTS, SEGMENT_INTERVALS
+    BIKE_SEGMENTS, SEGMENT_INTERVALS, SEGMENT_COMPONENTS, INTERVAL_SOURCE,
+    guessSegment, resolveSegment, componentsFor, reminderApplies
   };
 })(window);

@@ -89,9 +89,16 @@
   --text-2:    oklch(0.400 0.012 265);
   --text-3:    oklch(0.470 0.013 265);
 
-  --accent:      oklch(0.615 0.170 45);
-  --accent-soft: oklch(0.615 0.170 45 / 0.10);
-  --accent-line: oklch(0.615 0.170 45 / 0.30);
+  /* Aksen terang digelapkan dari L 0.615 -> 0.55.
+     Alasannya terukur, bukan selera: --on-accent putih di atas --accent L 0.615
+     hanya mencapai rasio 3.89:1 (kanvas) / 3.92:1 (hitung manual oklch), di bawah
+     ambang WCAG AA 4.5:1 untuk teks normal. Itu membuat SEMUA tombol primary dan
+     chip aktif di tema terang gagal kontras — termasuk tombol simpan.
+     Di L 0.55 rasio naik ke 5.20:1 pada hue dan chroma yang sama, jadi identitas
+     oranye tidak berubah; hanya kecerahnnya yang turun. */
+  --accent:      oklch(0.550 0.170 45);
+  --accent-soft: oklch(0.550 0.170 45 / 0.10);
+  --accent-line: oklch(0.550 0.170 45 / 0.30);
   --accent-text: oklch(0.520 0.160 42);
   --on-accent:   oklch(0.995 0 0);
 
@@ -599,6 +606,105 @@ select.inp {
 
 /* full-screen detail */
 .detail-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; border-radius: var(--r-md); background: var(--surface-2); }
+
+/* ============ penjelasan skor ============ */
+.sd { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.sd-sum {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-size: 12px; font-weight: 500; color: var(--accent-text);
+  cursor: pointer; list-style: none; padding: 2px 0;
+}
+.sd-sum::-webkit-details-marker { display: none; }
+.sd-sum svg { width: 14px; height: 14px; transition: transform 0.2s var(--ease); flex: none; }
+.sd[open] .sd-sum svg { transform: rotate(90deg); }
+.sd-body { padding-top: 10px; animation: pageIn 0.2s var(--ease); }
+.sd-formula {
+  font-family: 'BC', sans-serif; font-size: 12px;
+  background: var(--surface-2); border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm); padding: 8px 10px;
+  color: var(--text-2); line-height: 1.5; word-break: break-word;
+  font-variant-numeric: tabular-nums;
+}
+.sd-formula + .sd-formula { margin-top: 6px; }
+.sd-sec {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-3); margin: 12px 0 4px;
+}
+.sd-row {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 4px 0; border-bottom: 1px solid var(--line-soft);
+  font-size: 12px;
+}
+.sd-row:last-child { border-bottom: none; }
+.sd-name { flex: 1; min-width: 0; color: var(--text-2); }
+.sd-w { font-size: 10.5px; color: var(--text-3); flex: none; }
+.sd-v { font-weight: 600; flex: none; font-variant-numeric: tabular-nums; }
+.sd-note {
+  font-size: 11px; color: var(--text-3); line-height: 1.5;
+  margin-top: 10px; padding: 8px 10px;
+  background: var(--surface-2); border-radius: var(--r-sm);
+}
+
+/* ============ async / busy state ============
+   Dokumen 04 menuntut state default/hover/focus/active/disabled/loading/error.
+   Loading hanya dipasang di tempat yang MEMANG punya proses async (simpan,
+   impor, ekspor, laporan, wipe) — bukan di seluruh tombol, karena spinner yang
+   muncul untuk aksi instan membuat aplikasi terasa lebih lambat daripada nyatanya. */
+.btn[aria-busy="true"],
+.btn.is-busy {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+.btn[aria-busy="true"] > *,
+.btn.is-busy > * { visibility: hidden; }
+.btn[aria-busy="true"]::after,
+.btn.is-busy::after {
+  content: '';
+  position: absolute; inset: 0; margin: auto;
+  width: 16px; height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  color: var(--text-2);
+  animation: spin 0.7s linear infinite;
+}
+.btn.primary[aria-busy="true"]::after,
+.btn.primary.is-busy::after { color: var(--on-accent); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* tombol nonaktif: dibedakan dari tombol biasa, bukan hanya opacity */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.42;
+  pointer-events: none;
+  filter: grayscale(0.35);
+}
+
+/* baris aksi yang sedang bekerja */
+.row[aria-busy="true"] { opacity: 0.55; pointer-events: none; position: relative; }
+.row[aria-busy="true"]::after {
+  content: '';
+  position: absolute; right: 12px; top: 50%; margin-top: -8px;
+  width: 15px; height: 15px;
+  border: 2px solid currentColor; border-top-color: transparent;
+  border-radius: 50%;
+  color: var(--accent);
+  animation: spin 0.7s linear infinite;
+}
+.row[aria-busy="true"] .end svg { visibility: hidden; }
+
+/* input tidak valid setelah dicoba simpan */
+.inp[aria-invalid="true"] {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+.field-err {
+  font-size: 11px; color: var(--danger); margin-top: 4px; line-height: 1.4;
+}
+
+/* form yang sedang menyimpan tidak bisa diubah setengah jalan */
+form[aria-busy="true"] { opacity: 0.7; pointer-events: none; }
 
 /* ============ empty / misc ============ */
 .empty {

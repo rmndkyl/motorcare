@@ -1,0 +1,235 @@
+{
+  "states": {
+    "row": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "oklch(0.215 0.012 265)",
+      "transition": "background",
+      "cursor": "pointer",
+      "hasHoverRule": true
+    },
+    "form": {
+      "inp": {
+        "bg": "oklch(0.962 0.004 265)",
+        "color": "oklch(0.215 0.012 265)",
+        "border": "oklch(0.88 0.008 265)",
+        "transition": "border-color, background",
+        "ariaBusy": null,
+        "disabled": false,
+        "ariaDisabled": null
+      },
+      "saveBtn": {
+        "bg": "oklch(0.615 0.17 45)",
+        "color": "oklch(0.995 0 0)",
+        "border": "rgba(0, 0, 0, 0)",
+        "transition": "filter, transform, background",
+        "ariaBusy": null,
+        "disabled": false,
+        "ariaDisabled": null
+      },
+      "checkbox": {
+        "bg": "oklch(0.962 0.004 265)",
+        "color": "oklch(0.215 0.012 265)",
+        "border": "oklch(0.88 0.008 265)",
+        "transition": "all",
+        "ariaBusy": null,
+        "disabled": false,
+        "ariaDisabled": null
+      },
+      "sheetHasSpinner": false
+    },
+    "save_feedback": {
+      "btnBefore": "<button class=\"btn primary\" data-save=\"\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColo",
+      "anyBusyAttr": false,
+      "note": "save handler has no busy/disabled state in source"
+    }
+  },
+  "garage_cards": [
+    {
+      "nick": "PCX MANDAYY",
+      "lines": [
+        "Honda PCX · B 5152 KHQ",
+        "12.168 km"
+      ]
+    },
+    {
+      "nick": "PROBE MOTOR 2",
+      "lines": [
+        "Honda PCX · B 9999 ZZ",
+        "45.000 km"
+      ]
+    }
+  ],
+  "scenarioF": {
+    "checks": [
+      {
+        "route": "home",
+        "note": "bike B data must not leak into PCX views",
+        "absentExpected": [
+          "PROBE MOTOR 2",
+          "45.000",
+          "51.515",
+          "62.626",
+          "PROBE EXPENSE",
+          "B 9999 ZZ"
+        ],
+        "found": [],
+        "pass": true
+      },
+      {
+        "route": "care",
+        "note": "bike B data must not leak into PCX views",
+        "absentExpected": [
+          "PROBE MOTOR 2",
+          "45.000",
+          "51.515",
+          "62.626",
+          "PROBE EXPENSE",
+          "B 9999 ZZ"
+        ],
+        "found": [],
+        "pass": true
+      },
+      {
+        "route": "history",
+        "note": "bike B data must not leak into PCX views",
+        "absentExpected": [
+          "PROBE MOTOR 2",
+          "45.000",
+          "51.515",
+          "62.626",
+          "PROBE EXPENSE",
+          "B 9999 ZZ"
+        ],
+        "found": [],
+        "pass": true
+      },
+      {
+        "route": "profile",
+        "note": "bike B data must not leak into PCX views",
+        "absentExpected": [
+          "PROBE MOTOR 2",
+          "45.000",
+          "51.515",
+          "62.626",
+          "PROBE EXPENSE",
+          "B 9999 ZZ"
+        ],
+        "found": [],
+        "pass": true
+      },
+      {
+        "route": "garage",
+        "note": "each card shows its own odometer",
+        "pass": true,
+        "cards": [
+          {
+            "nick": "PCX MANDAYY",
+            "lines": [
+              "Honda PCX · B 5152 KHQ",
+              "12.168 km"
+            ]
+          },
+          {
+            "nick": "PROBE MOTOR 2",
+            "lines": [
+              "Honda PCX · B 9999 ZZ",
+              "45.000 km"
+            ]
+          }
+        ]
+      },
+      {
+        "route": "home",
+        "note": "bike A data must not leak into bike B views",
+        "absentExpected": [
+          "PCX MANDAYY",
+          "12.168",
+          "Surganya Motor",
+          "378.000"
+        ],
+        "found": [],
+        "pass": true
+      },
+      {
+        "route": "care",
+        "note": "bike A data must not leak into bike B views",
+        "absentExpected": [
+          "PCX MANDAYY",
+          "12.168",
+          "Surganya Motor",
+          "378.000"
+        ],
+        "found": [],
+        "pass": true
+      },
+      {
+        "route": "history",
+        "note": "bike A data must not leak into bike B views",
+        "absentExpected": [
+          "PCX MANDAYY",
+          "12.168",
+          "Surganya Motor",
+          "378.000"
+        ],
+        "found": [],
+        "pass": true
+      },
+      {
+        "route": "profile",
+        "note": "bike A data must not leak into bike B views",
+        "absentExpected": [
+          "PCX MANDAYY",
+          "12.168",
+          "Surganya Motor",
+          "378.000"
+        ],
+        "found": [],
+        "pass": true
+      }
+    ],
+    "allPass": true
+  },
+  "state_inventory": {
+    "export-json": {
+      "present": true,
+      "ariaBusy": null,
+      "disabled": false
+    },
+    "import-json": {
+      "present": true,
+      "ariaBusy": null,
+      "disabled": false
+    },
+    "export-report": {
+      "present": true,
+      "ariaBusy": null,
+      "disabled": false
+    },
+    "wipe": {
+      "present": true,
+      "ariaBusy": null,
+      "disabled": false
+    }
+  },
+  "contrast_manual": {
+    "light": {
+      "accent_srgb": [
+        211.7,
+        90.6,
+        16.3
+      ],
+      "on_accent_srgb": [
+        253.3,
+        253.3,
+        253.3
+      ],
+      "manual_ratio": 3.92,
+      "wcag_need_normal_text": 4.5,
+      "verdict": "FAIL"
+    },
+    "dark": {
+      "manual_ratio": 7.05,
+      "verdict": "PASS"
+    }
+  }
+}

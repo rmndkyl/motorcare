@@ -1,3 +1,9 @@
 screens/
 tmp/
 .DS_Store
+
+# artefak audit: hasil ukur (json/md/py) masuk repo sebagai bukti,
+# screenshot & log besar tidak (bisa dibuat ulang dengan _audit/shots.py)
+_audit/shots/
+_audit/*.log
+_audit/__pycache__/

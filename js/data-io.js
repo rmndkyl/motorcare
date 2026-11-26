@@ -5,16 +5,18 @@
 
   const STORES = ['bikes', 'services', 'damages', 'expenses', 'odoLog', 'reminders', 'checks', 'docs'];
 
-  async function exportJson() {
-    const dump = { app: 'motorcare', version: 1, exportedAt: new Date().toISOString(), data: {} };
-    for (const s of STORES) {
-      dump.data[s] = await MC.Store.all(s);
-    }
-    const json = JSON.stringify(dump, null, 1);
-    const name = 'motorcare-backup-' + MC.todayISO() + '.json';
-    downloadFile(json, name, 'application/json');
-    const parts = STORES.map((s) => dump.data[s].length).reduce((a, b) => a + b, 0);
-    CU.toast('Backup tersimpan (' + parts + ' entri)', 'ok');
+  async function exportJson(btn) {
+    await CU.withBusy(btn, async () => {
+      const dump = { app: 'motorcare', version: 1, exportedAt: new Date().toISOString(), data: {} };
+      for (const s of STORES) {
+        dump.data[s] = await MC.Store.all(s);
+      }
+      const json = JSON.stringify(dump, null, 1);
+      const name = 'motorcare-backup-' + MC.todayISO() + '.json';
+      downloadFile(json, name, 'application/json');
+      const parts = STORES.map((s) => dump.data[s].length).reduce((a, b) => a + b, 0);
+      CU.toast('Backup tersimpan (' + parts + ' entri)', 'ok');
+    }, 'Menyiapkan backup');
   }
 
   // Validasi bentuk data sebelum masuk database. File backup bisa datang dari mana saja —
@@ -53,6 +55,23 @@
       if (r.segment && valid.indexOf(r.segment) < 0) r.segment = null;
     }
 
+    // status pemeriksaan: hanya nilai yang dikenal. Kalau status asing lolos masuk,
+    // skor kesehatan akan memperlakukannya sebagai data tak terpakai (dan sebelumnya
+    // malah dianggap "Sehat"). Lebih baik dijatuhkan ke status terendah yang pasti
+    // dikenali daripada menyimpan nilai yang tidak bisa ditafsirkan siapa pun.
+    if (store === 'checks') {
+      const valid = (MC.CHECK_STATUS || []).map((s) => s.id);
+      if (valid.indexOf(r.status) < 0) r.status = 'perlu-diperiksa';
+    }
+    if (store === 'damages') {
+      const valid = (MC.DAMAGE_STATUS || []).map((s) => s.id);
+      if (valid.indexOf(r.status) < 0) r.status = 'belum';
+    }
+    // Pengingat dengan `kind` asing sengaja TIDAK diubah: kind hanya dipakai untuk
+    // mencocokkan template dan aturan segmen, dan keduanya sudah menangani nilai
+    // tak dikenal (label jatuh ke kind itu sendiri, reminderApplies -> true).
+    // Mengubahnya ke nilai "tebakan" justru bisa menimpa pengingat custom user.
+
     // teks: buang kontrol & batasi panjang, supaya satu field tidak bisa
     // menabrakkan seluruh tampilan atau menyimpan payload raksasa
     ['nickname', 'brand', 'model', 'plate', 'color', 'note', 'name', 'part', 'symptoms', 'shop', 'type', 'label']
@@ -84,7 +103,7 @@
     setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
   }
 
-  function importJson() {
+  function importJson(btn) {
     const inp = document.createElement('input');
     inp.type = 'file';
     inp.accept = '.json,application/json';
@@ -112,19 +131,27 @@
         });
         if (!ok) return;
 
+        // impor bisa menulis ratusan baris; tanpa indikator, user mengira
+        // tombolnya tidak bekerja dan menekannya lagi
+        const done = CU.busy(btn, 'Mengimpor backup');
+        CU.toast('Mengimpor…', 'ok');
         let imported = 0, rejected = 0;
-        for (const store of STORES) {
-          const rows = parsed.data[store] || [];
-          for (const raw of rows) {
-            if (!raw || typeof raw !== 'object') { rejected++; continue; }
-            const r = sanitizeRow(store, raw);
-            await MC.Store.put(store, r);
-            imported++;
+        try {
+          for (const store of STORES) {
+            const rows = parsed.data[store] || [];
+            for (const raw of rows) {
+              if (!raw || typeof raw !== 'object') { rejected++; continue; }
+              const r = sanitizeRow(store, raw);
+              await MC.Store.put(store, r);
+              imported++;
+            }
           }
+          await MCS.loadAll();
+          CU.toast(imported + ' entri dipulihkan' + (rejected ? ', ' + rejected + ' ditolak' : ''), 'ok');
+          if (global.MCApp) global.MCApp.refresh();
+        } finally {
+          done();
         }
-        await MCS.loadAll();
-        CU.toast(imported + ' entri dipulihkan' + (rejected ? ', ' + rejected + ' ditolak' : ''), 'ok');
-        if (global.MCApp) global.MCApp.refresh();
       } catch (e) {
         CU.toast('Gagal impor: ' + e.message, 'err');
       }
@@ -132,9 +159,10 @@
     inp.click();
   }
 
-  function exportReport() {
+  function exportReport(btn) {
     const bike = MCS.activeBike();
     if (!bike) { CU.toast('Belum ada motor', 'err'); return; }
+    return CU.withBusy(btn, async () => {
     const ctx = MCS.ctxFor(bike);
     const km = MCD.currentKm(bike, ctx.odoLog, ctx.services);
     const health = MCD.healthScore(bike, ctx);
@@ -199,6 +227,7 @@
 
     downloadFile(t, 'motorcare-laporan-' + bike.nickname.replace(/[^a-z0-9]/gi, '-').toLowerCase() + '-' + MC.todayISO() + '.txt', 'text/plain');
     CU.toast('Laporan diunduh', 'ok');
+    }, 'Menyiapkan laporan');
   }
 
   async function forceReload() {
@@ -222,7 +251,7 @@
     location.reload();
   }
 
-  async function wipe() {
+  async function wipe(btn) {
     const ok = await CU.confirmDialog({
       title: 'Hapus SEMUA data?',
       message: 'Semua motor, servis, kerusakan, pengeluaran, dan pengingat akan dihapus dari HP ini.',
@@ -236,11 +265,13 @@
       danger: true, yes: 'Ya, hapus'
     });
     if (!ok2) return;
-    await MC.Store.clearAll();
-    await MCS.loadAll();
+    await CU.withBusy(btn, async () => {
+      await MC.Store.clearAll();
+      await MCS.loadAll();
+    }, 'Menghapus data');
     CU.toast('Semua data dihapus', 'ok');
     if (global.MCApp) global.MCApp.go('home');
   }
 
-  global.MCData = { exportJson, importJson, exportReport, wipe, downloadFile, forceReload };
+  global.MCData = { exportJson, importJson, exportReport, wipe, downloadFile, forceReload, sanitizeRow };
 })(window);

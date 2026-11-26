@@ -1,0 +1,212 @@
+{
+  "url": "http://127.0.0.1:35075/",
+  "viewport": "390x844",
+  "data": {
+    "bikes": [
+      {
+        "nick": "PCX MANDAYY",
+        "segment": null,
+        "trans": "matik",
+        "year": 2025,
+        "km": 12168
+      }
+    ],
+    "services": 1,
+    "checks": 15,
+    "reminders": 12
+  },
+  "p0": {
+    "active": {
+      "segment": "matic-baru",
+      "total": 12,
+      "checked": 12,
+      "score": 100,
+      "componentIds": [
+        "mesin",
+        "oli",
+        "rem-depan",
+        "rem-belakang",
+        "ban",
+        "suspensi",
+        "aki",
+        "kelistrikan",
+        "lampu",
+        "pendingin",
+        "cvt",
+        "bahan-bakar"
+      ]
+    },
+    "perSegment": {
+      "matic-baru": {
+        "n": 12,
+        "hasCvt": true,
+        "hasRantai": false,
+        "healthTotal": 12,
+        "reminderHasCvt": true,
+        "reminderHasRantai": false,
+        "contradiction": false
+      },
+      "matic-lama": {
+        "n": 12,
+        "hasCvt": true,
+        "hasRantai": false,
+        "healthTotal": 12,
+        "reminderHasCvt": true,
+        "reminderHasRantai": false,
+        "contradiction": false
+      },
+      "bebek-manual": {
+        "n": 12,
+        "hasCvt": false,
+        "hasRantai": true,
+        "healthTotal": 12,
+        "reminderHasCvt": false,
+        "reminderHasRantai": true,
+        "contradiction": false
+      },
+      "sport": {
+        "n": 12,
+        "hasCvt": false,
+        "hasRantai": true,
+        "healthTotal": 12,
+        "reminderHasCvt": false,
+        "reminderHasRantai": true,
+        "contradiction": false
+      }
+    }
+  },
+  "p0_checkform": {
+    "offeredComponents": [
+      "mesin",
+      "oli",
+      "rem-depan",
+      "rem-belakang",
+      "ban",
+      "suspensi",
+      "aki",
+      "kelistrikan",
+      "lampu",
+      "pendingin",
+      "rantai-gear",
+      "bahan-bakar"
+    ],
+    "offersCvt": false,
+    "offersRantai": true,
+    "count": 12
+  },
+  "p1_interval_ui": {
+    "saysUnverified": true,
+    "saysNotManualBook": true,
+    "hasSourceLabel": true,
+    "snippet": "Angka awal, belum diverifikasi ke buku servis. Interval ini disusun dari rekomendasi umum yang beredar di Indonesia, bukan dari bu"
+  },
+  "p1_score_detail": {
+    "closed": {
+      "hasDetails": true,
+      "isOpen": false,
+      "summary": "Lihat cara hitung skor"
+    },
+    "open": {
+      "formula": "(100×3 + 100×3 + 100×3 + 100×2 + 100×3 + 100×1 + 100×2 + 100×2 + 100×1 + 100×2 + 100×2 + 100×2) ÷ 26 = 100 dasar",
+      "rows": 13,
+      "sections": [
+        "Nilai per komponen",
+        "Penalti yang diterapkan"
+      ],
+      "hasExcludedNote": false,
+      "hasPenaltySection": true,
+      "hasWeightLabel": true,
+      "hasComponentValues": true,
+      "finalLine": ""
+    }
+  },
+  "p2": {
+    "beforeExport": {
+      "ariaBusy": null,
+      "disabled": false
+    },
+    "exportBusy": {
+      "during": {
+        "ariaBusy": "true",
+        "ariaDisabled": "true",
+        "disabled": true
+      },
+      "after": {
+        "ariaBusy": null,
+        "disabled": false
+      }
+    },
+    "spinnerCss": {
+      "content": "\"\"",
+      "width": "15px",
+      "animation": "spin",
+      "color": "oklch(0.55 0.17 45)"
+    }
+  },
+  "contrast": {
+    "dark": {
+      "pairsChecked": 119,
+      "fails": [],
+      "min": 5.11,
+      "worst": {
+        "text": "Hapus semua data",
+        "cls": "t",
+        "fg": "oklch(0.655 0.205 22)",
+        "bg": "oklch(0.205 0.008 265)",
+        "size": 14,
+        "weight": "500",
+        "ratio": 5.11,
+        "route": "profile",
+        "need": 4.5,
+        "large": false
+      }
+    },
+    "light": {
+      "pairsChecked": 119,
+      "fails": [],
+      "min": 4.43,
+      "worst": {
+        "text": "CARE",
+        "cls": "",
+        "fg": "oklch(0.55 0.17 45)",
+        "bg": "oklch(0.945 0.004 265)",
+        "size": 19,
+        "weight": "800",
+        "ratio": 4.43,
+        "route": "home",
+        "need": 3.0,
+        "large": true
+      }
+    }
+  },
+  "layout": {
+    "scrollW": 390,
+    "innerW": 390,
+    "overflowX": false,
+    "navTop": 782,
+    "lastElBottom": 764,
+    "navOverlapsLast": false,
+    "reflow320": {
+      "scrollW": 320,
+      "innerW": 320
+    },
+    "reflow320_scoreOpen": {
+      "scrollW": 320,
+      "innerW": 320,
+      "overflowX": false,
+      "formulaW": 258
+    }
+  },
+  "touch": {
+    "under24": [],
+    "count": 0
+  },
+  "smoke": {
+    "before": 15,
+    "after": 16,
+    "saved": true,
+    "scoreAfterSave": 100,
+    "total": 12
+  },
+  "console": []
+}

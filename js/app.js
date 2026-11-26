@@ -172,11 +172,11 @@
     },
     'open-ai': () => global.MCAI.openAI(),
     'quick-menu': () => quickMenu(),
-    'export-json': () => global.MCData.exportJson(),
-    'import-json': () => global.MCData.importJson(),
-    'export-report': () => global.MCData.exportReport(),
-    'wipe': () => global.MCData.wipe(),
-    'force-reload': () => global.MCData.forceReload(),
+    'export-json': (d, btn) => global.MCData.exportJson(btn),
+    'import-json': (d, btn) => global.MCData.importJson(btn),
+    'export-report': (d, btn) => global.MCData.exportReport(btn),
+    'wipe': (d, btn) => global.MCData.wipe(btn),
+    'force-reload': (d, btn) => global.MCData.forceReload(btn),
     'go-check': () => { global.MCPages.care.setTab('cek'); go('care'); },
     'go-history': () => { global.MCPages.history.setTab('rusak'); go('history'); },
     'theme-info': () => CU.toast('Tema gelap otomotif — dibuat untuk dibaca malam hari di garasi.'),
@@ -212,7 +212,7 @@
       const fn = ACTIONS[act];
       if (fn) {
         e.preventDefault();
-        fn({ id: actBtn.dataset.id, comp: actBtn.dataset.comp });
+        fn({ id: actBtn.dataset.id, comp: actBtn.dataset.comp }, actBtn);
       }
       return;
     }

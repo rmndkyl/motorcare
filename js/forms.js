@@ -114,13 +114,15 @@
           obj.photos = notaSlots.map((x) => x.dataUrl).filter(Boolean);
 
           try {
-            await MC.Store.put('services', obj);
-            // kalau ada KM dan lebih besar, update odometer motor
-            if (obj.km !== null) await bumpKm(obj.km, obj.date, 'Servis');
-            // kalau biaya > 0, catat juga ke pengeluaran? -> tidak otomatis, agar tidak dobel hitung
+            await CU.withBusy(root.querySelector('[data-save]'), async () => {
+              await MC.Store.put('services', obj);
+              // kalau ada KM dan lebih besar, update odometer motor
+              if (obj.km !== null) await bumpKm(obj.km, obj.date, 'Servis');
+              // kalau biaya > 0, catat juga ke pengeluaran? -> tidak otomatis, agar tidak dobel hitung
+              await after();
+            }, 'Menyimpan servis');
             s.close();
             CU.toast(isEdit ? 'Servis diperbarui' : 'Servis dicatat', 'ok');
-            await after();
           } catch (e) { CU.toast('Gagal: ' + e.message, 'err'); }
         };
 
@@ -212,11 +214,13 @@
           obj.photos = slots.map((x) => x.dataUrl).filter(Boolean);
 
           try {
-            await MC.Store.put('damages', obj);
-            if (obj.km !== null) await bumpKm(obj.km, obj.date, 'Kerusakan');
+            await CU.withBusy(root.querySelector('[data-save]'), async () => {
+              await MC.Store.put('damages', obj);
+              if (obj.km !== null) await bumpKm(obj.km, obj.date, 'Kerusakan');
+              await after();
+            }, 'Menyimpan kerusakan');
             s.close();
             CU.toast(isEdit ? 'Kerusakan diperbarui' : 'Kerusakan dicatat', 'ok');
-            await after();
           } catch (e) { CU.toast('Gagal: ' + e.message, 'err'); }
         };
 
@@ -267,10 +271,12 @@
           obj.note = String(v.note || '').trim();
           obj.km = v.km !== '' ? +v.km : null;
           try {
-            await MC.Store.put('expenses', obj);
+            await CU.withBusy(root.querySelector('[data-save]'), async () => {
+              await MC.Store.put('expenses', obj);
+              await after();
+            }, 'Menyimpan pengeluaran');
             s.close();
             CU.toast(isEdit ? 'Pengeluaran diperbarui' : 'Pengeluaran dicatat', 'ok');
-            await after();
           } catch (e) { CU.toast('Gagal: ' + e.message, 'err'); }
         };
         const delBtn = root.querySelector('[data-del]');
@@ -317,18 +323,20 @@
           obj.km = +v.km;
           obj.note = String(v.note || '').trim();
           try {
-            await MC.Store.put('odoLog', obj);
-            const b = MCS.activeBike();
-            const ctx = MCS.ctxFor(b);
-            const cur = MCD.currentKm(b, ctx.odoLog, ctx.services);
-            if (cur === null || obj.km > cur) {
-              b.currentKm = obj.km;
-              b.currentKmDate = obj.date;
-              await MC.Store.put('bikes', b);
-            }
+            await CU.withBusy(root.querySelector('[data-save]'), async () => {
+              await MC.Store.put('odoLog', obj);
+              const b = MCS.activeBike();
+              const ctx = MCS.ctxFor(b);
+              const cur = MCD.currentKm(b, ctx.odoLog, ctx.services);
+              if (cur === null || obj.km > cur) {
+                b.currentKm = obj.km;
+                b.currentKmDate = obj.date;
+                await MC.Store.put('bikes', b);
+              }
+              await after();
+            }, 'Menyimpan kilometer');
             s.close();
             CU.toast('Kilometer dicatat', 'ok');
-            await after();
           } catch (e) { CU.toast('Gagal: ' + e.message, 'err'); }
         };
         const delBtn = root.querySelector('[data-del]');
@@ -408,10 +416,12 @@
           obj.active = !!v.active;
 
           try {
-            await MC.Store.put('reminders', obj);
+            await CU.withBusy(root.querySelector('[data-save]'), async () => {
+              await MC.Store.put('reminders', obj);
+              await after();
+            }, 'Menyimpan pengingat');
             s.close();
             CU.toast(isEdit ? 'Pengingat diperbarui' : 'Pengingat ditambahkan', 'ok');
-            await after();
           } catch (e) { CU.toast('Gagal: ' + e.message, 'err'); }
         };
 
@@ -431,19 +441,25 @@
 
   /* ================= PEMERIKSAAN KOMPONEN ================= */
   function checkForm(componentId) {
-    const comps = componentId ? MC.COMPONENTS.filter((c) => c.id === componentId) : MC.COMPONENTS;
+    // komponen yang ditawarkan mengikuti segmen motor aktif — motor manual tidak
+    // ditanya soal CVT, motor CVT tidak ditanya soal rantai & gir
+    const bike = MCS.activeBike();
+    const comps = MC.componentsFor(MC.resolveSegment(bike));
+    const allowed = comps.map((c) => c.id);
+    const validId = componentId && allowed.indexOf(componentId) >= 0 ? componentId : null;
+
     const latest = {};
-    MCS.ctxFor(MCS.activeBike()).checks.forEach((c) => {
+    MCS.ctxFor(bike).checks.forEach((c) => {
       const p = latest[c.component];
       if (!p || (c.date || '') >= (p.date || '')) latest[c.component] = c;
     });
 
     const body =
-      (componentId
+      (validId
         ? '<div class="banner accent" style="margin-bottom:14px">' + I.icon('gauge') +
-          '<span>Memeriksa: <b>' + CU.esc((MC.COMPONENTS.find((c) => c.id === componentId) || {}).label) + '</b></span></div>'
-        : '<div class="field"><label>Komponen</label>' + CU.select('component', MC.COMPONENTS, componentId || 'mesin') + '</div>') +
-      (componentId ? '<input type="hidden" name="component" value="' + CU.esc(componentId) + '">' : '') +
+          '<span>Memeriksa: <b>' + CU.esc((comps.find((c) => c.id === validId) || {}).label) + '</b></span></div>'
+        : '<div class="field"><label>Komponen</label>' + CU.select('component', comps, validId || comps[0].id) + '</div>') +
+      (validId ? '<input type="hidden" name="component" value="' + CU.esc(validId) + '">' : '') +
       '<div class="field"><label>Status</label>' +
         '<div style="display:flex;flex-direction:column;gap:7px" data-status>' +
           MC.CHECK_STATUS.map((st) =>
@@ -493,10 +509,12 @@
             note: String(v.note || '').trim()
           };
           try {
-            await MC.Store.put('checks', obj);
+            await CU.withBusy(root.querySelector('[data-save]'), async () => {
+              await MC.Store.put('checks', obj);
+              await after();
+            }, 'Menyimpan pemeriksaan');
             s.close();
             CU.toast('Pemeriksaan dicatat', 'ok');
-            await after();
           } catch (e) { CU.toast('Gagal: ' + e.message, 'err'); }
         };
       }
@@ -553,10 +571,12 @@
           obj.date = v.date || null;
           obj.dataUrl = slots[0].dataUrl || null;
           try {
-            await MC.Store.put('docs', obj);
+            await CU.withBusy(root.querySelector('[data-save]'), async () => {
+              await MC.Store.put('docs', obj);
+              await after();
+            }, 'Menyimpan dokumen');
             s.close();
             CU.toast('Dokumen disimpan', 'ok');
-            await after();
           } catch (e) { CU.toast('Gagal: ' + e.message, 'err'); }
         };
 

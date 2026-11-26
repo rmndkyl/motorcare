@@ -125,6 +125,71 @@
     });
   }
 
+  /* ---------- async feedback ----------
+   * Dipakai tombol yang benar-benar menunggu proses (simpan ke IndexedDB, baca
+   * file backup, tulis file ekspor). Sebelumnya satu-satunya umpan balik adalah
+   * toast SETELAH selesai — jadi pada HP lambat, tombol simpan terlihat tidak
+   * bereaksi dan user menekannya berkali-kali.
+   *
+   * busy(btn) mengembalikan fungsi untuk mengembalikan keadaan semula, supaya
+   * pemanggil tidak perlu ingat atribut mana yang harus dibersihkan.
+   */
+  function busy(btn, label) {
+    if (!btn) return function () {};
+    const prevDisabled = btn.disabled;
+    const prevLabel = btn.getAttribute('aria-label');
+    btn.setAttribute('aria-busy', 'true');
+    btn.setAttribute('aria-disabled', 'true');
+    btn.disabled = true;
+    if (label) {
+      btn.setAttribute('aria-label', label);
+      // simpan teks lama supaya bisa dipulihkan walau tombol punya ikon + teks
+      btn.dataset.prevHtml = btn.dataset.prevHtml || btn.innerHTML;
+    }
+    return function done() {
+      btn.removeAttribute('aria-busy');
+      btn.removeAttribute('aria-disabled');
+      btn.disabled = prevDisabled;
+      if (label) {
+        if (prevLabel === null) btn.removeAttribute('aria-label');
+        else btn.setAttribute('aria-label', prevLabel);
+        if (btn.dataset.prevHtml) { btn.innerHTML = btn.dataset.prevHtml; delete btn.dataset.prevHtml; }
+      }
+    };
+  }
+
+  // jalankan fn() sambil menandai tombol sedang sibuk; selalu memulihkan
+  // keadaan tombol walau fn() melempar error
+  async function withBusy(btn, fn, label) {
+    const done = busy(btn, label);
+    try {
+      return await fn();
+    } finally {
+      done();
+    }
+  }
+
+  // tandai input yang gagal validasi + hapus tanda itu begitu user memperbaiki
+  function markInvalid(inp, message) {
+    if (!inp) return;
+    inp.setAttribute('aria-invalid', 'true');
+    const field = inp.closest('.field') || inp.parentElement;
+    if (field && message && !field.querySelector('.field-err')) {
+      const err = el('<div class="field-err" role="alert">' + esc(message) + '</div>');
+      field.appendChild(err);
+    }
+    const clear = () => {
+      inp.removeAttribute('aria-invalid');
+      if (field) {
+        const e = field.querySelector('.field-err');
+        if (e) e.remove();
+      }
+      inp.removeEventListener('input', clear);
+    };
+    inp.addEventListener('input', clear);
+    inp.focus();
+  }
+
   /* ---------- reusable field markup ---------- */
   function field(label, inputHtml, hint) {
     return '<div class="field"><label>' + esc(label) + '</label>' + inputHtml +
@@ -249,6 +314,6 @@
     esc, el, toast, sheet, closeTopSheet, anySheetOpen, confirmDialog,
     field, input, textarea, select, formValues,
     photoPicker, wirePhotoPicker, empty, badge, bytes,
-    safeImgSrc, imgTag
+    safeImgSrc, imgTag, busy, withBusy, markInvalid
   };
 })(window);

@@ -32,7 +32,8 @@
             '</label>'
           ).join('') +
         '</div>' +
-        '<div class="hint">Menentukan interval awal pengingat. Semua tetap bisa diedit nanti.</div>' +
+        '<div class="hint">Menentukan interval awal pengingat dan komponen apa yang ditanyakan saat pemeriksaan. Semua tetap bisa diedit nanti.</div>' +
+        '<div class="hint" style="color:var(--warn);margin-top:5px">' + CU.esc(MC.INTERVAL_SOURCE.label) + ' — angka di atas titik awal, bukan angka buku servis varian motormu.</div>' +
       '</div>' +
 
       '<div class="grid2">' +
@@ -111,23 +112,25 @@
           slots.forEach((sl) => { if (sl.dataUrl) obj.photos[sl.key] = sl.dataUrl; });
 
           try {
-            await MC.Store.put('bikes', obj);
+            await CU.withBusy(root.querySelector('[data-save]'), async () => {
+              await MC.Store.put('bikes', obj);
 
-            if (!isEdit) {
-              // buat set reminder default sesuai segmen motor
-              const rems = MCS.defaultReminders(obj.id, obj.segment);
-              await Promise.all(rems.map((r) => MC.Store.put('reminders', r)));
-              // odometer awal
-              if (obj.currentKm !== null) {
-                await MC.Store.put('odoLog', {
-                  id: MC.uid(), bikeId: obj.id, date: MC.todayISO(),
-                  km: obj.currentKm, note: 'Odometer awal'
-                });
+              if (!isEdit) {
+                // buat set reminder default sesuai segmen motor
+                const rems = MCS.defaultReminders(obj.id, obj.segment);
+                await Promise.all(rems.map((r) => MC.Store.put('reminders', r)));
+                // odometer awal
+                if (obj.currentKm !== null) {
+                  await MC.Store.put('odoLog', {
+                    id: MC.uid(), bikeId: obj.id, date: MC.todayISO(),
+                    km: obj.currentKm, note: 'Odometer awal'
+                  });
+                }
+                await MCS.setActiveBike(obj.id);
               }
-              await MCS.setActiveBike(obj.id);
-            }
 
-            await MCS.loadAll();
+              await MCS.loadAll();
+            }, isEdit ? 'Menyimpan motor' : 'Menambah motor');
             s.close();
             CU.toast(isEdit ? 'Motor diperbarui' : 'Motor ditambahkan', 'ok');
             if (onDone) onDone(obj);

@@ -47,9 +47,15 @@
   function buildReminders(bike, services, reminders, km) {
     const age = componentAge(services);
     const out = [];
+    const segment = MC.resolveSegment(bike);
 
     (reminders || []).forEach((r) => {
       if (r.active === false) return;
+      // Pengingat yang mustahil untuk segmen motor ini tidak ditampilkan.
+      // Build lama sempat memberi motor matic pengingat "Rantai & gear"; data itu
+      // sudah tersimpan di IndexedDB user dan tidak bisa dihapus dari kode. Yang
+      // bisa dilakukan: jangan tampilkan sebagai tugas yang harus dikerjakan.
+      if (!MC.reminderApplies(r.kind, segment)) return;
       let lastKm = null, lastDate = null;
 
       if (r.serviceType) {
@@ -119,14 +125,51 @@
     const { checks, services, damages, reminders } = ctx;
     const km = currentKm(bike, ctx.odoLog, services);
 
+    // Komponen aktif diturunkan dari segmen motor, bukan satu daftar global.
+    // Motor manual tidak punya CVT; motor CVT tidak punya rantai & gir. Menghitung
+    // komponen yang tidak ada sebagai "belum diperiksa" akan menghukum skor karena
+    // sesuatu yang memang tidak perlu diperiksa.
+    const segment = MC.resolveSegment(bike);
+    const comps = MC.componentsFor(segment);
+
     const latestByComponent = {};
     (checks || []).forEach((c) => {
       const prev = latestByComponent[c.component];
       if (!prev || (c.date || '') >= (prev.date || '')) latestByComponent[c.component] = c;
     });
 
-    const active = Object.keys(latestByComponent);
+    // Hanya pemeriksaan dengan status yang DIKENAL yang boleh masuk hitungan.
+    // Sebelumnya status tak dikenal jatuh ke CHECK_STATUS[0] = "Sehat" (100),
+    // jadi satu baris rusak dari file backup bisa menaikkan skor ke 100 tanpa
+    // ada yang sadar. Status tak dikenal sekarang diperlakukan seperti belum
+    // diperiksa: dikeluarkan dari penyebut, bukan dianggap sehat.
+    function statusOf(c) {
+      return MC.CHECK_STATUS.find((s) => s.id === c.status) || null;
+    }
+
+    const relevantIds = comps.map((c) => c.id);
+    const active = Object.keys(latestByComponent)
+      .filter((k) => relevantIds.indexOf(k) >= 0 && statusOf(latestByComponent[k]));
     const factors = [];
+
+    // rincian per komponen untuk panel penjelasan (P1). Disimpan lengkap supaya
+    // user bisa memeriksa angka yang kita beri, bukan hanya 3 faktor teratas.
+    const breakdown = comps.map((comp) => {
+      const c = latestByComponent[comp.id];
+      if (!c) {
+        return { id: comp.id, label: comp.label, weight: comp.weight, status: null,
+                 statusLabel: 'Belum diperiksa', value: null, counted: false };
+      }
+      const st = statusOf(c);
+      if (!st) {
+        return { id: comp.id, label: comp.label, weight: comp.weight, status: c.status,
+                 statusLabel: 'Status tidak dikenal', value: null, counted: false,
+                 date: c.date };
+      }
+      return { id: comp.id, label: comp.label, weight: comp.weight, status: c.status,
+               statusLabel: st.label, value: st.score, counted: true,
+               date: c.date, note: c.note || '' };
+    });
 
     if (!active.length) {
       return {
@@ -134,17 +177,22 @@
         label: 'Belum ada data',
         tone: 'unknown',
         checked: 0,
-        total: MC.COMPONENTS.length,
+        total: comps.length,
+        segment,
         factors: [{ text: 'Belum ada pemeriksaan komponen. Skor tidak bisa dihitung tanpa data.', tone: 'unknown', delta: 0 }],
+        breakdown,
+        penalties: [],
+        excluded: breakdown.filter((b) => !b.counted).map((b) => b.label),
         km
       };
     }
 
     let sumW = 0, sumS = 0;
-    MC.COMPONENTS.forEach((comp) => {
+    comps.forEach((comp) => {
       const c = latestByComponent[comp.id];
       if (!c) return;
-      const st = MC.CHECK_STATUS.find((s) => s.id === c.status) || MC.CHECK_STATUS[0];
+      const st = statusOf(c);
+      if (!st) return;                       // status tak dikenal: tidak dihitung
       sumW += comp.weight;
       sumS += st.score * comp.weight;
       if (st.score < 100) {
@@ -152,8 +200,10 @@
       }
     });
 
-    let score = Math.round(sumS / sumW);
+    const weightedRaw = sumW ? sumS / sumW : 0;
+    let score = Math.round(weightedRaw);
     const base = score;
+    const penalties = [];
 
     // penalti dari servis yang lewat jadwal (bukan diagnosis, tapi bukti kelalaian)
     // 'needs-baseline' tidak dihitung: jadwalnya sendiri masih tebakan, jadi tidak
@@ -163,13 +213,17 @@
     if (overdue.length) {
       const pen = Math.min(18, overdue.length * 6);
       score -= pen;
-      factors.push({ text: overdue.length + ' jadwal perawatan terlewat', tone: 'danger', delta: -pen });
+      const txt = overdue.length + ' jadwal perawatan terlewat';
+      factors.push({ text: txt, tone: 'danger', delta: -pen });
+      penalties.push({ label: txt, amount: pen, cap: 18 });
     }
     const soon = rem.filter((r) => r.state === 'soon');
     if (soon.length) {
       const pen = Math.min(8, soon.length * 2);
       score -= pen;
-      factors.push({ text: soon.length + ' perawatan mendekati jadwal', tone: 'warn', delta: -pen });
+      const txt = soon.length + ' perawatan mendekati jadwal';
+      factors.push({ text: txt, tone: 'warn', delta: -pen });
+      penalties.push({ label: txt, amount: pen, cap: 8 });
     }
 
     // kerusakan yang belum ditangani
@@ -179,12 +233,16 @@
     if (critical.length) {
       const pen = Math.min(20, critical.length * 10);
       score -= pen;
-      factors.push({ text: critical.length + ' kerusakan kritis belum ditangani', tone: 'danger', delta: -pen });
+      const txt = critical.length + ' kerusakan kritis belum ditangani';
+      factors.push({ text: txt, tone: 'danger', delta: -pen });
+      penalties.push({ label: txt, amount: pen, cap: 20 });
     }
     if (high.length) {
       const pen = Math.min(10, high.length * 5);
       score -= pen;
-      factors.push({ text: high.length + ' kerusakan prioritas tinggi belum ditangani', tone: 'warn2', delta: -pen });
+      const txt = high.length + ' kerusakan prioritas tinggi belum ditangani';
+      factors.push({ text: txt, tone: 'warn2', delta: -pen });
+      penalties.push({ label: txt, amount: pen, cap: 10 });
     }
 
     // kesegaran data: odometer jarang di-update = skor tidak bisa dipercaya
@@ -193,11 +251,14 @@
       const stale = MC.daysBetween(lastOdo, MC.todayISO());
       if (stale !== null && stale > 90) {
         score -= 5;
-        factors.push({ text: 'Odometer tidak diperbarui ' + stale + ' hari', tone: 'warn', delta: -5 });
+        const txt = 'Odometer tidak diperbarui ' + stale + ' hari';
+        factors.push({ text: txt, tone: 'warn', delta: -5 });
+        penalties.push({ label: txt, amount: 5, cap: null });
       }
     } else {
       score -= 5;
       factors.push({ text: 'Belum pernah mencatat odometer', tone: 'warn', delta: -5 });
+      penalties.push({ label: 'Belum pernah mencatat odometer', amount: 5, cap: null });
     }
 
     score = Math.max(0, Math.min(100, Math.round(score)));
@@ -210,8 +271,15 @@
     return {
       score, base, label, tone,
       checked: active.length,
-      total: MC.COMPONENTS.length,
+      total: comps.length,
+      segment,
       factors: factors.sort((a, b) => a.delta - b.delta),
+      breakdown,
+      penalties,
+      // komponen yang sengaja TIDAK masuk penyebut: belum diperiksa, atau
+      // tidak relevan dengan segmen motor ini
+      excluded: breakdown.filter((b) => !b.counted).map((b) => b.label),
+      weightedRaw: Math.round(weightedRaw * 100) / 100,
       km
     };
   }

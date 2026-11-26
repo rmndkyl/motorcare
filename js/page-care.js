@@ -151,7 +151,7 @@
     });
 
     html += '<div class="banner info" style="margin-top:16px">' + I.icon('info') +
-      '<span>Interval default mengikuti rekomendasi umum. Sesuaikan dengan buku manual motormu atau saran mekanik — setiap pengingat bisa diedit.</span></div>';
+      '<span><b>' + CU.esc(MC.INTERVAL_SOURCE.label) + '.</b> ' + CU.esc(MC.INTERVAL_SOURCE.note) + '</span></div>';
 
     return html;
   }
@@ -180,6 +180,7 @@
     });
 
     const health = MCD.healthScore(bike, ctx);
+    const comps = MC.componentsFor(health.segment);
     let html = '';
 
     // gauge ringkas
@@ -194,19 +195,23 @@
         '<div class="score-info"><div class="kicker">Skor kesehatan</div>' +
           '<div class="state" style="color:' + toneVar + '">' + CU.esc(health.label) + '</div>' +
           '<div class="sub">' + health.checked + ' dari ' + health.total + ' komponen punya data pemeriksaan</div></div>' +
-      '</div></div>';
+      '</div>' +
+      scoreDetail(health) +
+    '</div>';
 
     html += '<button class="btn primary block" data-act="add-check" style="margin-bottom:14px">' +
       I.icon('gauge') + 'Catat Pemeriksaan</button>';
 
     html += '<div class="comp-grid">';
-    MC.COMPONENTS.forEach((comp) => {
+    comps.forEach((comp) => {
       const c = latest[comp.id];
-      const st = c ? (MC.CHECK_STATUS.find((s) => s.id === c.status) || MC.CHECK_STATUS[0]) : null;
+      const st = c ? (MC.CHECK_STATUS.find((s) => s.id === c.status) || null) : null;
       const tone = st ? st.tone : 'unknown';
       const pct = st ? st.score : 0;
       const barColor = tone === 'ok' ? 'var(--ok)' : tone === 'warn' ? 'var(--warn)'
         : tone === 'warn2' ? 'var(--warn2)' : tone === 'danger' ? 'var(--danger)' : 'var(--surface-3)';
+      // status asing pada data tersimpan: st = null -> tampil "Belum diperiksa",
+      // bukan diam-diam tampil sebagai "Sehat" (itu menyesatkan)
       html += '<button class="comp" data-act="check-comp" data-comp="' + comp.id + '">' +
         '<div class="head"><span class="name">' + CU.esc(comp.label) + '</span></div>' +
         '<div class="st ' + tone + '">' + (st ? CU.esc(st.label) : 'Belum diperiksa') + '</div>' +
@@ -220,6 +225,76 @@
       '<span><b>Skor ini bukan diagnosis.</b> Hanya mencerminkan apa yang kamu isi. Bunyi mesin aneh atau rem blong tetap harus diperiksa mekanik.</span></div>';
 
     return html;
+  }
+
+  /* ---------- penjelasan skor ----------
+   * Dokumen 07-C menuntut skor disertai cara hitungnya. Tanpa ini user hanya
+   * melihat satu angka yang tidak bisa diperiksa — dan angka yang tidak bisa
+   * diperiksa sama saja dengan tebakan dari sudut pandang user.
+   *
+   * Yang ditampilkan: penyebut (komponen apa saja yang dihitung dan bobotnya),
+   * nilai tiap komponen, tiap penalti yang diterapkan, dan komponen yang
+   * DIKELUARKAN dari hitungan beserta alasannya.
+   */
+  function scoreDetail(health) {
+    if (health.score === null) {
+      return '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft)">' +
+        '<div style="font-size:11.5px;color:var(--text-3);line-height:1.55">' +
+          'Skor belum dihitung karena tidak ada satu pun komponen yang diperiksa. ' +
+          'Komponen yang belum diperiksa <b>tidak</b> dianggap sehat — itu sebabnya skornya kosong, bukan 0.' +
+        '</div></div>';
+    }
+
+    const counted = health.breakdown.filter((b) => b.counted);
+    const notCounted = health.breakdown.filter((b) => !b.counted);
+
+    let rows = '';
+    counted.forEach((b) => {
+      const tone = (MC.CHECK_STATUS.find((s) => s.id === b.status) || {}).tone || 'unknown';
+      rows += '<div class="sd-row">' +
+        '<span class="sd-name">' + CU.esc(b.label) + '</span>' +
+        '<span class="sd-w">bobot ' + b.weight + '</span>' +
+        '<span class="sd-v" style="color:var(--' + tone + ')">' + b.value + '%</span>' +
+      '</div>';
+    });
+
+    let penRows = '';
+    if (health.penalties.length) {
+      health.penalties.forEach((p) => {
+        penRows += '<div class="sd-row">' +
+          '<span class="sd-name">' + CU.esc(p.label) + '</span>' +
+          '<span class="sd-w">' + (p.cap ? 'maks ' + p.cap : 'tetap') + '</span>' +
+          '<span class="sd-v" style="color:var(--danger)">−' + p.amount + '</span>' +
+        '</div>';
+      });
+    } else {
+      penRows = '<div class="sd-row"><span class="sd-name" style="color:var(--text-3)">Tidak ada penalti</span></div>';
+    }
+
+    let skipNote = '';
+    if (notCounted.length) {
+      skipNote = '<div class="sd-note">Dikeluarkan dari penyebut (' + notCounted.length + '): ' +
+        notCounted.map((b) => CU.esc(b.label)).join(', ') +
+        '. Komponen ini tidak punya data pemeriksaan, jadi tidak ikut menaikkan atau menurunkan skor.</div>';
+    }
+
+    return '<details class="sd">' +
+      '<summary class="sd-sum">Lihat cara hitung skor' + I.icon('right', 14) + '</summary>' +
+      '<div class="sd-body">' +
+        '<div class="sd-formula">' +
+          '(' + counted.map((b) => b.value + '×' + b.weight).join(' + ') + ') ÷ ' +
+          counted.reduce((a, b) => a + b.weight, 0) +
+          ' = ' + health.base + ' <span style="color:var(--text-3)">dasar</span>' +
+        '</div>' +
+        '<div class="sd-sec">Nilai per komponen</div>' + rows +
+        '<div class="sd-sec">Penalti yang diterapkan</div>' + penRows +
+        (health.penalties.length
+          ? '<div class="sd-formula">' + health.base + ' − ' +
+              health.penalties.reduce((a, b) => a + b.amount, 0) + ' penalti = <b>' + health.score + '</b></div>'
+          : '') +
+        skipNote +
+      '</div>' +
+    '</details>';
   }
 
   function setTab(t) { tab = t; }

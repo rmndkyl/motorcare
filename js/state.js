@@ -84,12 +84,8 @@
       const intervalDays = iv ? iv[1] : t.intervalDays;
 
       // pengingat yang tidak relevan untuk segmen ini tidak dibuat sama sekali
-      // (mis. oli gardan untuk motor manual, rantai untuk matic)
-      const irrelevant =
-        (t.kind === 'oli-gardan' && !table['oli-gardan']) ||
-        (t.kind === 'cvt' && !table['cvt']) ||
-        (t.kind === 'rantai-gear' && !table['rantai-gear']);
-      if (irrelevant) return null;
+      // (mis. oli gardan & CVT untuk motor manual, rantai untuk matic)
+      if (!MC.reminderApplies(t.kind, seg)) return null;
 
       return {
         id: MC.uid(),
@@ -110,18 +106,11 @@
 
   // segmen ditebak dari data motor yang sudah diisi — bukan ditanyakan lagi.
   // Hanya tebakan awal; user bisa mengubahnya di form motor.
-  function guessSegment(bike) {
-    if (!bike) return 'matic-baru';
-    const trans = bike.transmission || 'matik';
-    const year = +bike.year || 0;
-    const thisYear = new Date().getFullYear();
-    const age = year ? thisYear - year : null;
+  // Implementasinya sekarang di core.js (MC.resolveSegment / MC.guessSegment) supaya
+  // healthScore dan form pemeriksaan memakai aturan yang SAMA. Dua salinan aturan
+  // adalah cara paling mudah membuat daftar komponen dan pengingat berbeda pendapat.
+  const guessSegment = MC.guessSegment;
+  const resolveSegment = MC.resolveSegment;
 
-    if (trans === 'manual') return 'bebek-manual';
-    if (trans === 'semi') return 'sport';
-    if (age !== null && age > 5) return 'matic-lama';
-    return 'matic-baru';
-  }
-
-  global.MCS = { S, activeBike, ctxFor, loadAll, setActiveBike, defaultReminders, guessSegment };
+  global.MCS = { S, activeBike, ctxFor, loadAll, setActiveBike, defaultReminders, guessSegment, resolveSegment };
 })(window);
