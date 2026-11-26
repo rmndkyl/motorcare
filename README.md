@@ -29,7 +29,9 @@ kill criteria-nya tercatat di `~/LYID-BOTS/_decisions/LEDGER.md`.
 | **Skor kesehatan** | Dihitung dari data pemeriksaan + jadwal terlewat + kerusakan terbuka + kesegaran odometer |
 | **Riwayat kerusakan** | Gejala, bagian, prioritas, estimasi biaya, status penanganan, foto |
 | **Pengingat 2 sumbu** | Berbasis KM **dan** tanggal; interval bisa diedit per pengingat |
-| **12 template pengingat** | Oli mesin, oli gardan, servis berkala, CVT, filter udara, busi, kampas rem, ban, aki, rantai, pajak, STNK |
+| **13 template pengingat** | Servis awal 1.000 km, oli mesin, oli gardan, servis berkala, CVT, filter udara, busi, kampas rem, ban, aki, rantai, pajak, STNK |
+| **Preset per segmen motor** | Interval otomatis menyesuaikan matic baru/lama, bebek manual, atau sport — bukan satu angka untuk semua motor |
+| **Mode terang & gelap** | Ikut HP, atau pilih sendiri. Terang untuk dibaca di bawah sinar matahari |
 | **Manajemen pengeluaran** | 7 kategori, total bulanan/tahunan, grafik 12 bulan, rata-rata per bulan |
 | **Odometer** | Riwayat KM, delta antar catatan, jarak tempuh bulanan, grafik |
 | **Timeline** | Seluruh kejadian motor dalam satu garis waktu |
@@ -144,6 +146,52 @@ status   = overdue kalau salah satu lewat; soon kalau salah satu ≤ soonKm/soon
 `lastKm`/`lastDate` diambil otomatis dari servis terakhir dengan jenis yang cocok, atau
 di-override manual per pengingat. Jadi catat servis → jadwal berikutnya langsung terhitung.
 
+## Preset interval per segmen motor
+
+Satu angka interval untuk semua motor itu salah: oli motor matic lama dan motor sport
+butuh jarak yang berbeda. Aplikasi menyimpan empat preset dan memilih awalannya dari
+transmisi + tahun motor (bisa diubah di form motor).
+
+| Segmen | Oli mesin | Rantai | CVT / oli gardan |
+|---|---|---|---|
+| Matic / bebek ≤5 tahun | 4.000 km / 4 bln | — | ada |
+| Matic / bebek >5 tahun | 2.000 km / 2 bln | — | ada |
+| Bebek / manual | 3.000 km / 3 bln | 4.000 km / 4 bln | **tidak dibuat** |
+| Sport / oli sintetik | 6.000 km / 4 bln | 4.000 km / 4 bln | **tidak dibuat** |
+
+Motor manual tidak diberi pengingat CVT atau oli gardan karena komponennya tidak ada —
+pengingat yang mustahil membuat daftar terasa penuh tapi tidak berguna.
+
+`servis-awal` (1.000 km) dibuat **nonaktif** secara default. Kalau aktif, motor yang sudah
+60.000 km akan langsung menampilkan "terlewat 59.000 km" — angka benar secara aritmetika
+tapi menyesatkan sebagai saran.
+
+Angka interval mengikuti rekomendasi yang beredar di Indonesia (AHM: oli maksimal 4.000 km
+atau 4 bulan; Yamaha: 2.000 km/2 bulan model lama, 4.000–5.000 km matic-bebek modern,
+6.000 km sport dengan pelumas sintetik). Ini titik awal, **bukan** pengganti buku manual.
+Semua pengingat tetap bisa diedit satu per satu.
+
+Ubah tabelnya di `js/core.js` → `SEGMENT_INTERVALS`.
+
+## Tema terang & gelap
+
+Default **ikut HP** (`prefers-color-scheme`), bisa dipaksa Gelap atau Terang dari Profil.
+Pilihan disimpan di `localStorage`, jadi tetap berlaku setelah aplikasi ditutup.
+
+Kenapa terang itu penting: layar OLED yang menyala terang di bawah sinar matahari justru
+kalah oleh pantulan. Mode terang memakai latar `oklch(0.968)` dan menggelapkan semua warna
+status — bukan sekadar membalik tema gelap, karena hijau/kuning versi gelap gagal kontras
+di atas latar cerah.
+
+Semua warna lewat token di `css/app.css` (`:root`/`[data-theme="dark"]` dan
+`[data-theme="light"]`). Menambah komponen baru tidak perlu tahu tema yang aktif — cukup
+pakai `var(--surface)`, `var(--text-2)`, dan seterusnya.
+
+Tema dipasang oleh `js/theme.js` yang dimuat di `<head>` **sebelum** body dirender. Kalau
+dipasang setelah boot, user melihat kedipan tema yang membuat aplikasi terasa lambat.
+File itu tidak boleh diubah jadi inline script: CSP memakai `script-src 'self'` tanpa
+`'unsafe-inline'`.
+
 ## Asisten AI
 
 **Mode lokal (default)** — offline, tanpa key. 11 pola gejala di `js/ai.js` (`KB`), masing-masing
@@ -160,7 +208,9 @@ Menambah pola gejala: tambahkan objek ke array `KB` di `js/ai.js`.
 
 | Mau ubah | Di mana |
 |---|---|
-| Warna aksen | `css/app.css` → `--accent` dan turunannya (OKLCH) |
+| Warna aksen | `css/app.css` → `--accent` di blok tema gelap DAN terang |
+| Interval per segmen motor | `js/core.js` → `SEGMENT_INTERVALS` |
+| Daftar segmen | `js/core.js` → `BIKE_SEGMENTS` |
 | Jenis perawatan | `js/core.js` → `SERVICE_TYPES` |
 | Daftar komponen + bobot | `js/core.js` → `COMPONENTS` |
 | Template pengingat + interval default | `js/core.js` → `REMINDER_TEMPLATES` |
@@ -196,6 +246,20 @@ Diuji di browser sungguhan (Chromium, viewport 390×844), bukan hanya dibaca:
 - Server dimatikan → app tetap terbuka dari cache, data utuh, input baru tetap tersimpan
 - Navigasi semua route + tab: 0 console error, 0 warning, 0 unhandled rejection
 - Lebar 390px: `scrollWidth` = 390 (tidak ada overflow horizontal)
+
+Audit standar (diukur di browser, bukan perkiraan):
+
+| Standar | Hasil |
+|---|---|
+| Kontras WCAG 2.2 AA `1.4.3` — mode terang | 11/11 PASS (terendah 6.09, butuh 4.5) |
+| Kontras WCAG 2.2 AA `1.4.3` — mode gelap | PASS (nav 10.19 & 11.48; status 10.0) |
+| Target sentuh `2.5.8` | 0 elemen di bawah 24×24 px |
+| Reflow `1.4.10` @320px | 0 overflow, `scrollWidth == innerWidth` |
+| Zoom teks 200% `1.4.4` | tidak ada teks terpotong |
+| Fokus tidak tertutup `2.4.11` | PASS |
+| LCP / CLS / long task | 752 ms / 0 / 0 |
+| Secret tertanam di kode | 0 |
+| XSS lewat impor backup | tertahan (allowlist `safeImgSrc`, 0 eksekusi) |
 
 ## Batasan yang jujur
 
