@@ -162,7 +162,7 @@
                 '<button type="button" class="del" data-delslot="' + i + '" aria-label="Hapus ' + esc(s.label) + '">' + I.icon('x', 11) + '</button>'
               : I.icon('camera', 20)) +
             '<span class="tag">' + esc(s.label) + '</span>' +
-            '<input type="file" accept="image/*" capture="environment" hidden data-file="' + i + '">' +
+            '<input type="file" accept="image/*" hidden data-file="' + i + '">' +
           '</div>'
         ).join('') +
       '</div>';
