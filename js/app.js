@@ -176,6 +176,7 @@
     'import-json': () => global.MCData.importJson(),
     'export-report': () => global.MCData.exportReport(),
     'wipe': () => global.MCData.wipe(),
+    'force-reload': () => global.MCData.forceReload(),
     'go-check': () => { global.MCPages.care.setTab('cek'); go('care'); },
     'go-history': () => { global.MCPages.history.setTab('rusak'); go('history'); },
     'theme-info': () => CU.toast('Tema gelap otomotif — dibuat untuk dibaca malam hari di garasi.'),

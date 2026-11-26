@@ -2,7 +2,7 @@
  * Cache-first untuk aset aplikasi supaya bisa dipakai tanpa internet.
  * Data user TIDAK pernah dikirim ke mana pun; SW hanya menyajikan file statis.
  */
-const VERSION = 'motorcare-v1.5.3';
+const VERSION = 'motorcare-v2.0.0';
 const ASSETS = [
   './',
   './index.html',
@@ -70,9 +70,15 @@ self.addEventListener('fetch', (e) => {
   const isDoc = req.mode === 'navigate';
   const isCode = /\.(?:js|css|webmanifest)$/.test(url.pathname);
 
+  // URL ber-hash (?v=...) menandakan isi file berubah -> jangan pernah disajikan
+  // dari cache. Ini jaring pengaman untuk service worker LAMA yang masih
+  // cache-first: kita sendiri tidak bisa mengubah SW yang sudah terpasang di HP
+  // user, tapi kita bisa membuat URL-nya tidak pernah match dengan cache lamanya.
+  const isStamped = url.searchParams.has('v');
+
   // Navigasi & kode: network-first. Kode berubah tiap deploy, jadi cache-first
   // akan menyajikan versi lama setelah update. Fallback ke cache saat offline.
-  if (isDoc || isCode) {
+  if (isDoc || isCode || isStamped) {
     e.respondWith(
       fetch(new Request(req, { cache: 'no-cache' }))
         .then((res) => {

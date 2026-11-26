@@ -139,6 +139,27 @@
     CU.toast('Laporan diunduh', 'ok');
   }
 
+  async function forceReload() {
+    const ok = await CU.confirmDialog({
+      title: 'Paksa muat ulang?',
+      message: 'Aplikasi akan menghapus cache lokal dan mengambil versi terbaru dari internet.',
+      detail: 'Data motor, servis, dan biaya TIDAK ikut terhapus. Hanya file aplikasinya yang diambil ulang. Butuh koneksi internet.',
+      yes: 'Muat ulang'
+    });
+    if (!ok) return;
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      if (window.caches && caches.keys) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch (e) { /* tetap lanjut reload walau pembersihan gagal sebagian */ }
+    location.reload();
+  }
+
   async function wipe() {
     const ok = await CU.confirmDialog({
       title: 'Hapus SEMUA data?',
@@ -159,5 +180,5 @@
     if (global.MCApp) global.MCApp.go('home');
   }
 
-  global.MCData = { exportJson, importJson, exportReport, wipe, downloadFile };
+  global.MCData = { exportJson, importJson, exportReport, wipe, downloadFile, forceReload };
 })(window);

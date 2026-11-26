@@ -60,6 +60,7 @@
     html += '<div class="card" style="padding:6px 14px"><div class="rows">' +
       rowBtn('palette', 'Tema', 'Saat ini: gelap otomotif', 'theme-info') +
       rowBtn('settings', 'Kapasitas penyimpanan', storageLabel(), 'storage-info') +
+      rowBtn('download', 'Paksa muat ulang aplikasi', 'Kalau tampilan terasa tidak update', 'force-reload') +
     '</div></div>';
 
     /* ---- bahaya ---- */
@@ -74,7 +75,7 @@
       '<div style="font-size:11px;color:var(--text-3);margin-top:6px;line-height:1.6">' +
         'Rekam kesehatan motor, bukan pengganti mekanik.<br>' +
         'Data tersimpan lokal di perangkat ini.<br>' +
-        '<span style="opacity:.7">Versi 1.0.0</span></div>' +
+        '<span style="opacity:.7">Build ' + CU.esc(buildVersion()) + '</span></div>' +
     '</div>';
 
     return html;
@@ -98,6 +99,20 @@
       });
     } catch (e) { /* ignore */ }
     return 'Perkiraan ' + CU.bytes(chars) + ' terpakai';
+  }
+
+  // versi build = hash aset yang benar-benar dimuat halaman ini.
+  // Fungsinya untuk membedakan "HP masih pakai cache lama" dari "memang bug",
+  // karena tanpa penanda, dua keadaan itu terlihat sama saja dari layar.
+  function buildVersion() {
+    try {
+      const s = document.querySelector('script[src*="?v="]');
+      if (s) {
+        const m = s.getAttribute('src').match(/\?v=([a-f0-9]+)/);
+        if (m) return m[1];
+      }
+    } catch (e) { /* ignore */ }
+    return 'dev';
   }
 
   global.MCPages = global.MCPages || {};
