@@ -102,9 +102,29 @@ Catatan metode: percobaan offline pertama saya **timeout 15 detik** dan terlihat
 
 Screenshot: `_audit/shots/clean-01..08`.
 
+### Verifikasi produksi (`_audit/live.py`, build `f0440e1e40`)
+
+Bukan build lokal — URL live `https://rmndkyl.github.io/motorcare/` diuji ulang setelah push:
+
+| Pemeriksaan | Hasil |
+|---|---|
+| Hash aset yang benar-benar disajikan | `f0440e1e40`, 16 script ber-hash |
+| Komponen per-segmen di produksi | 4/4 konsisten (matic tanpa rantai, manual tanpa CVT) |
+| Panel skor | Ada, 13 baris, rumus terender |
+| Peringatan asal interval | Tampil |
+| Kontras gelap / terang | 119 pasangan, **0 gagal** (5.11 / 4.43) |
+| Bottom nav | `navTop 782` vs `lastElBottom 764` — tidak menutupi |
+| Target sentuh | 0 di bawah 24px |
+| PWA | manifest OK, `display: standalone`, 3 ikon, service worker aktif |
+| Console | 0 error, 0 warning |
+
+Ini penting karena push yang berhasil ≠ build yang tersaji. GitHub Pages bisa menyajikan build
+lama dari cache; yang membuktikan deploy berhasil adalah hash aset di HTML yang benar-benar
+dimuat browser, bukan status `git push`.
+
 ---
 
-## 5. Catatan metode — tiga kesalahan yang saya buat di sesi ini
+## 5. Catatan metode — empat kesalahan yang saya buat di sesi ini
 
 Ini dicatat supaya tidak terulang, bukan untuk membela diri.
 
@@ -117,6 +137,14 @@ Ini dicatat supaya tidak terulang, bukan untuk membela diri.
 3. **Menguji skor dengan tanggal yang sama** dengan pemeriksaan yang sudah ada. Tie-break
    `>=` mempertahankan baris lama, jadi skor tidak berubah dan saya hampir menyimpulkan engine-nya
    rusak. Yang benar: tanggal harus lebih baru, atau pakai motor baru yang bersih.
+4. **Menyimpulkan app gagal offline dari timeout harness.** `httpd.shutdown()` menghentikan loop
+   tapi tidak menutup socket, jadi koneksi menggantung dan `.catch()` di service worker tidak
+   pernah jalan. Setelah `server_close()`, offline lulus 2/2 cara. Ini yang paling menipu dari
+   keempatnya: hasilnya terlihat persis seperti bug produk, dan saya hampir mencatatnya begitu.
+
+Pola keempatnya sama: **alat ukur saya lebih sering salah daripada kodenya.** Karena itu setiap
+angka di dokumen ini punya dua sumber kalau bisa — kontras diukur dengan kanvas dan dihitung ulang
+manual dari oklch, deploy dicek lewat hash aset dan bukan status push.
 
 Dua kesalahan dari sesi sebelumnya tetap berlaku dan berhasil dihindari: parser regex pada
 `getComputedStyle` (diganti rasterisasi canvas + verifikasi hitung manual oklch), dan menyimpulkan
